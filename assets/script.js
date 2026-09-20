@@ -233,7 +233,7 @@ if (sessionStorage.getItem(LANDING_DISMISS_KEY) === "1") {
   landingOverlay.classList.add("hidden");
 }
 
-landingDemoBtn.addEventListener("click", dismissLanding);
+landingDemoBtn?.addEventListener("click", dismissLanding);
 landingLoginBtn.addEventListener("click", () => {
   // Tái sử dụng đúng luồng đăng nhập/kiểm tra cấu hình Drive đã có ở nút topbar.
   connectDriveBtn.click();
