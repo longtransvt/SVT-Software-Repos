@@ -500,6 +500,15 @@ body {
   padding: 5px 12px; font-size: 12px;
 }
 
+.landing-powered-by {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: rgba(255,255,255,0.95); border-radius: 12px;
+  padding: 10px 16px; margin-bottom: 20px;
+  color: var(--text); font-size: 12px; font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+.powered-by-logo { height: 22px; }
+
 .landing-actions { display: flex; flex-direction: column; gap: 10px; max-width: 320px; margin: 0 auto; }
 .landing-hint { font-size: 11px; color: rgba(255,255,255,0.7); margin: 10px 0 0; }
 
@@ -514,4 +523,5 @@ body {
 @media (max-width: 560px) {
   .landing-card { padding: 26px 20px; }
   .landing-features { grid-template-columns: 1fr; }
+  .landing-powered-by { flex-direction: column; gap: 6px; text-align: center; }
 }
