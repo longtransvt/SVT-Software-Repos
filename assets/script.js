@@ -167,19 +167,6 @@ const SAMPLE_FILES = [
 
 const CATEGORY_ICON = { Firmware: "📦", Application: "🧩", OS: "💽", Patch: "🩹" };
 
-// Khoá lưu danh sách file Bookmark/Favorite trong localStorage (khai báo trước `state`
-// vì hàm loadFavorites() bên dưới được gọi ngay khi khởi tạo `state`).
-const FAVORITES_STORAGE_KEY = "svtech_favorite_files_v1";
-
-function loadFavorites() {
-  try {
-    const raw = localStorage.getItem(FAVORITES_STORAGE_KEY);
-    return new Set(raw ? JSON.parse(raw) : []);
-  } catch (err) {
-    return new Set();
-  }
-}
-
 // ---- State ----
 const state = {
   vendors: [...DEFAULT_VENDORS],
@@ -192,8 +179,6 @@ const state = {
   dateFrom: "",        // bộ lọc nâng cao: ngày upload từ (yyyy-mm-dd)
   dateTo: "",          // bộ lọc nâng cao: ngày upload đến (yyyy-mm-dd)
   uploaderFilter: "all", // bộ lọc nâng cao: người upload
-  favoriteOnly: false, // chỉ hiển thị file đã Bookmark/Favorite
-  favorites: loadFavorites(), // Set các file được Bookmark, lưu ở localStorage (theo trình duyệt)
   accessToken: null,   // token OAuth hiện tại (chỉ giữ trong bộ nhớ, không lưu localStorage)
   tokenClient: null,   // Google Identity Services token client
   folderCache: {},     // cache "category::vendorName" -> folderId (tránh gọi API lặp lại)
@@ -212,7 +197,6 @@ const searchInput = document.getElementById("searchInput");
 const statusFilterEl = document.getElementById("statusFilter");
 const sortFilterEl = document.getElementById("sortFilter");
 const categoryTabsEl = document.getElementById("categoryTabs");
-const favoriteOnlyFilterEl = document.getElementById("favoriteOnlyFilter");
 const toggleAdvancedFiltersBtn = document.getElementById("toggleAdvancedFiltersBtn");
 const advancedFiltersEl = document.getElementById("advancedFilters");
 const dateFromFilterEl = document.getElementById("dateFromFilter");
@@ -961,11 +945,10 @@ function getFilteredFiles() {
     );
   }
 
-  // Bộ lọc nâng cao: ngày upload (từ/đến), người upload, chỉ hiển thị Yêu thích
+  // Bộ lọc nâng cao: ngày upload (từ/đến), người upload
   if (state.dateFrom) list = list.filter((f) => f.date >= state.dateFrom);
   if (state.dateTo) list = list.filter((f) => f.date <= state.dateTo);
   if (state.uploaderFilter !== "all") list = list.filter((f) => f.user === state.uploaderFilter);
-  if (state.favoriteOnly) list = list.filter((f) => isFavorite(f));
 
   switch (state.sortBy) {
     case "date-asc": list.sort((a, b) => a.date.localeCompare(b.date)); break;
@@ -973,42 +956,6 @@ function getFilteredFiles() {
     default: list.sort((a, b) => b.date.localeCompare(a.date));
   }
   return list;
-}
-
-// ========================================================================
-// BOOKMARK / FAVORITE (lưu cục bộ theo trình duyệt bằng localStorage,
-// không đồng bộ lên Master-Index vì đây là sở thích cá nhân của từng kỹ sư)
-// ========================================================================
-
-function saveFavorites() {
-  try {
-    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify([...state.favorites]));
-  } catch (err) {
-    // localStorage không khả dụng (VD: chế độ ẩn danh chặn) — bỏ qua, chỉ mất khi tải lại trang
-  }
-}
-
-// Khoá định danh 1 file để lưu Bookmark (Master-Index hiện chưa có ID duy nhất riêng,
-// nên ghép các trường mô tả bản ghi để tạo khoá ổn định).
-function favoriteKey(f) {
-  return [f.vendor, f.category, f.product, f.version, f.date, f.user].join("::");
-}
-
-function isFavorite(f) {
-  return state.favorites.has(favoriteKey(f));
-}
-
-function toggleFavorite(f) {
-  const key = favoriteKey(f);
-  if (state.favorites.has(key)) {
-    state.favorites.delete(key);
-    toast(`Đã bỏ Yêu thích "${f.product} — ${f.version}".`, "info");
-  } else {
-    state.favorites.add(key);
-    toast(`Đã thêm "${f.product} — ${f.version}" vào Yêu thích ⭐.`, "success");
-  }
-  saveFavorites();
-  renderFiles();
 }
 
 // Cập nhật danh sách "Người upload" trong bộ lọc nâng cao theo dữ liệu file hiện có,
@@ -1063,10 +1010,7 @@ function renderFiles() {
     const latestBadge = f.isLatest
       ? `<span class="badge badge-latest" title="Phiên bản mới nhất đang lưu trữ cho model này">🏆 Mới nhất</span>`
       : "";
-    const favActive = isFavorite(f);
-    const favBtn = `<button class="fav-btn${favActive ? " is-favorite" : ""}" data-action="favorite" data-idx="${idx}" title="${favActive ? "Bỏ Yêu thích" : "Thêm vào Yêu thích"}">${favActive ? "★" : "☆"}</button>`;
     tr.innerHTML = `
-      <td class="col-fav" data-label="Yêu thích">${favBtn}</td>
       <td class="file-name" data-label="Tên file">
         <span class="file-icon-badge cat-${catClass}">${CATEGORY_ICON[f.category] || "📄"}</span>
         <span>${fileLabel}</span>
@@ -1095,9 +1039,6 @@ function renderFiles() {
   });
   fileTableBody.querySelectorAll('[data-action="checksum"]').forEach((btn) => {
     btn.addEventListener("click", () => copyChecksum(files[Number(btn.dataset.idx)]));
-  });
-  fileTableBody.querySelectorAll('[data-action="favorite"]').forEach((btn) => {
-    btn.addEventListener("click", () => toggleFavorite(files[Number(btn.dataset.idx)]));
   });
 }
 
@@ -1139,7 +1080,6 @@ categoryTabsEl.addEventListener("click", (e) => {
 searchInput.addEventListener("input", (e) => { state.searchTerm = e.target.value; renderFiles(); });
 statusFilterEl.addEventListener("change", (e) => { state.statusFilter = e.target.value; renderFiles(); });
 sortFilterEl.addEventListener("change", (e) => { state.sortBy = e.target.value; renderFiles(); });
-favoriteOnlyFilterEl.addEventListener("change", (e) => { state.favoriteOnly = e.target.checked; renderFiles(); });
 dateFromFilterEl.addEventListener("change", (e) => { state.dateFrom = e.target.value; renderFiles(); });
 dateToFilterEl.addEventListener("change", (e) => { state.dateTo = e.target.value; renderFiles(); });
 uploaderFilterEl.addEventListener("change", (e) => { state.uploaderFilter = e.target.value; renderFiles(); });
@@ -1154,11 +1094,9 @@ resetAdvancedFiltersBtn.addEventListener("click", () => {
   state.dateFrom = "";
   state.dateTo = "";
   state.uploaderFilter = "all";
-  state.favoriteOnly = false;
   dateFromFilterEl.value = "";
   dateToFilterEl.value = "";
   uploaderFilterEl.value = "all";
-  favoriteOnlyFilterEl.checked = false;
   renderFiles();
 });
 

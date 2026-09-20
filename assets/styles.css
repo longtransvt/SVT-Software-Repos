@@ -271,11 +271,6 @@ body {
   font-size: 13px; background: var(--surface); color: var(--text); font-family: inherit;
 }
 .result-count { margin-left: auto; font-size: 13px; color: var(--text-muted); }
-.favorite-only-toggle {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
-  color: var(--text-muted); cursor: pointer; user-select: none;
-}
-.favorite-only-toggle input { cursor: pointer; }
 
 .advanced-filters {
   display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap;
@@ -300,18 +295,10 @@ body {
   font-weight: 700; padding: 12px 14px; border-bottom: 1px solid var(--border);
   white-space: nowrap; text-transform: uppercase; font-size: 11px; letter-spacing: 0.4px;
 }
-.file-table th.col-fav, .file-table td.col-fav { padding-left: 12px; padding-right: 6px; width: 32px; text-align: center; }
 .file-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .file-table tr:last-child td { border-bottom: none; }
 .file-table tbody tr:nth-child(even) { background: rgba(79, 70, 229, 0.02); }
 .file-table tr:hover { background: var(--primary-soft); }
-
-.fav-btn {
-  background: none; border: none; cursor: pointer; font-size: 17px; line-height: 1;
-  padding: 2px; color: var(--text-muted); opacity: 0.6; transition: opacity 0.12s ease, transform 0.12s ease;
-}
-.fav-btn:hover { opacity: 1; transform: scale(1.15); }
-.fav-btn.is-favorite { color: #f5a623; opacity: 1; }
 
 .file-name { font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .file-icon-badge {
