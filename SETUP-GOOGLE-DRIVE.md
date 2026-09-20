@@ -77,19 +77,34 @@ Mở `assets/script.js`, tìm khối `const DRIVE_CONFIG = { ... }` ở đầu f
 ```js
 const DRIVE_CONFIG = {
   CLIENT_ID: "xxxxxxxx.apps.googleusercontent.com", // Client ID ở Bước 3
-  SCOPES: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets",
+  SCOPES: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets openid email profile",
   DRIVE_ID: "",                 // Điền nếu dùng Shared Drive, để trống nếu dùng My Drive folder thường
-  CATEGORY_FOLDER_IDS: {
-    Firmware: "FOLDER_ID_01_Firmware",
-    Application: "FOLDER_ID_02_Application",
-    OS: "FOLDER_ID_03_OS",
-    Patch: "FOLDER_ID_04_Patch_OS",
+  FW_REPO_ROOT_ID: "FOLDER_ID_FW_REPO", // Thư mục gốc chứa các hãng, dùng để tự tạo hãng MỚI
+  CATEGORY_SUBFOLDER_NAMES: {
+    Firmware: "01_Firmware",
+    Application: "02_Application",
+    OS: "03_OS",
+    Patch: "04_Patch_OS",
+  },
+  // Folder ID cố định cho từng hãng + từng loại (cấu trúc: {Hãng}/{01_Firmware,...})
+  VENDOR_CATEGORY_FOLDER_IDS: {
+    hitachi: { Firmware: "FOLDER_ID", Application: "FOLDER_ID", OS: "FOLDER_ID", Patch: "FOLDER_ID" },
+    // ... tương tự cho các hãng khác (hpe, dell, cisco, netapp, oracle, microsoft, redhat, vmware, others)
+  },
+  VENDOR_ROOT_FOLDER_IDS: {
+    hitachi: "FOLDER_ID_GOC_CUA_HANG",
+    // ... tương tự cho các hãng khác
   },
   MASTER_INDEX_SHEET_ID: "SHEET_ID_CUA_MASTER_INDEX",
   MASTER_INDEX_SHEET_NAME: "Master-Index",
+  MASTER_DATA_SHEET_NAME: "Master-Data",
   CHECKSUM_MAX_BYTES: 200 * 1024 * 1024,
 };
 ```
+
+> **Vì sao cấu hình cứng (hardcode) Folder ID cho từng hãng/loại thay vì tìm-kiếm-theo-tên?**
+> Khi app tự tìm folder theo tên (`findOrCreateFolder`) ngay sau khi vừa tạo folder đó, chỉ mục tìm kiếm của Google Drive có thể bị trễ vài giây → app tưởng chưa có nên tạo thêm 1 folder trùng tên. Dùng thẳng Folder ID đã biết trước giúp loại bỏ hoàn toàn rủi ro này cho các hãng đã có sẵn cấu trúc. `findOrCreateFolder` chỉ còn được dùng khi thêm **hãng mới** (chưa có Folder ID cấu hình sẵn).
+
 
 ## Bước 5b — Tạo & cấu hình Google Sheet "Master-Index"
 1. Tạo một Google Sheet mới trong `00_INDEX_METADATA` (hoặc dùng file `Master-Index.gsheet` đã có trong cấu trúc README).
@@ -149,7 +164,7 @@ const DRIVE_CONFIG = {
 | "This app isn't verified" | Đang dùng OAuth External + chưa xác minh app | Bấm Advanced → Go to (unsafe) để tiếp tục (không ảnh hưởng chức năng), hoặc chuyển sang Internal nếu có Workspace |
 | HTTP 403 khi upload / tạo folder | Tài khoản đăng nhập chưa được cấp quyền Content Manager/Editor trên Shared Drive | Nhờ quản trị Shared Drive thêm tài khoản vào đúng vai trò |
 | HTTP 404 khi ghi Master-Index | `MASTER_INDEX_SHEET_ID` sai hoặc tài khoản chưa có quyền Editor trên Sheet | Kiểm tra lại Sheet ID và quyền chia sẻ |
-| Nút "Đăng nhập bằng Google" báo "Chưa cấu hình Google Drive" | Chưa điền đủ `CLIENT_ID`/`CATEGORY_FOLDER_IDS` trong `assets/script.js` | Hoàn tất Bước 5 |
+| Nút "Đăng nhập bằng Google" báo "Chưa cấu hình Google Drive" | Chưa điền đủ `CLIENT_ID`/`FW_REPO_ROOT_ID` trong `assets/script.js` | Hoàn tất Bước 5 |
 | Đăng nhập xong bị tự đăng xuất kèm cảnh báo sai domain | Đăng nhập bằng tài khoản Gmail cá nhân hoặc domain khác `svtech.com.vn` | Đăng nhập lại đúng bằng email công ty, hoặc chỉnh `ALLOWED_DOMAIN` nếu muốn nới lỏng |
 
 ## Ghi chú bảo mật
