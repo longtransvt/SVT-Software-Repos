@@ -1,11 +1,17 @@
 # Kiến trúc lưu trữ Firmware / Application / OS / Patch trên Google Drive nội bộ
 
-🌐 **Truy cập trực tiếp (GitHub Pages):** https://longtransvt.github.io/SVT-Software-Repos/
+🌐 **Truy cập trực tiếp (GitHub Pages):**
 
-> ⚠️ Lưu ý: Trang được host qua GitHub Pages nên có thể truy cập public trên Internet. Chỉ tài khoản Google
-> thuộc domain công ty và có quyền truy cập Shared Drive `FW-REPO` mới đăng nhập/tải lên/tải xuống được —
-> tuy nhiên nên cân nhắc chuyển repo sang **private** + **GitHub Pages nội bộ** (hoặc host trên hạ tầng nội bộ)
-> nếu không muốn giao diện/cấu hình (Client ID, Sheet ID...) bị lộ công khai.
+| Bản | Repo | URL | Truy cập |
+|---|---|---|---|
+| **Nội bộ (khuyến nghị)** | [`svtech-system/SVT-Software-Repos`](https://github.com/svtech-system/SVT-Software-Repos) | https://refactored-bassoon-5wo89nj.pages.github.io/ | Chỉ thành viên tổ chức GitHub `svtech-system` đã đăng nhập mới xem được (GitHub Pages private) |
+| Public (legacy/song song) | [`longtransvt/SVT-Software-Repos`](https://github.com/longtransvt/SVT-Software-Repos) | https://longtransvt.github.io/SVT-Software-Repos/ | Công khai trên Internet |
+
+> ⚠️ Lưu ý: 2 bản trên đang chạy **song song** (đồng bộ cùng mã nguồn qua 2 remote Git `origin`/`svtech`), tạm
+> thời để chuyển đổi dần. Chỉ tài khoản Google thuộc domain công ty và có quyền truy cập Shared Drive
+> `FW-REPO` mới đăng nhập/tải lên/tải xuống được ở cả 2 bản — tuy nhiên bản **public** vẫn lộ mã nguồn/cấu
+> hình (Client ID, Sheet ID, Folder ID...) công khai trên Internet. Khuyến nghị chuyển hẳn sang dùng bản
+> **nội bộ** và archive bản public khi đã sẵn sàng.
 
 ## 1. Mục tiêu
 - Chuẩn hoá nơi lưu trữ firmware, application, OS, patch OS của các hãng lớn.

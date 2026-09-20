@@ -4,7 +4,10 @@
 > patch OS). Nếu bạn cần cấu hình Google Drive/OAuth cho hệ thống, xem `SETUP-GOOGLE-DRIVE.md`.
 > Nếu cần hiểu cấu trúc thư mục lưu trữ trên Drive, xem `README.md`.
 
-🌐 Truy cập: https://longtransvt.github.io/SVT-Software-Repos/
+🌐 Truy cập:
+- **Nội bộ (khuyến nghị):** https://refactored-bassoon-5wo89nj.pages.github.io/ — chỉ thành viên tổ chức
+  GitHub `svtech-system` đã đăng nhập mới xem được.
+- Public (đang chạy song song tạm thời): https://longtransvt.github.io/SVT-Software-Repos/
 
 ---
 
