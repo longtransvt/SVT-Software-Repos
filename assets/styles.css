@@ -306,8 +306,16 @@ body {
 .badge-Active { background: var(--success-soft); color: var(--success); border-color: #a7f3d0; }
 .badge-Deprecated { background: var(--warn-soft); color: var(--warn); border-color: #fde68a; }
 .badge-Archived { background: var(--bg); color: var(--text-muted); border-color: var(--border); }
+/* Tag "Mới nhất" tự động tính theo ngày upload gần nhất trong cùng nhóm Hãng/Loại/Sản phẩm */
+.badge-latest {
+  background: rgba(245, 130, 31, 0.12); color: var(--svt-orange-500, #f5821f);
+  border-color: rgba(245, 130, 31, 0.35); margin-left: 4px;
+}
 
-.row-actions { display: flex; gap: 6px; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.changelog-link { text-decoration: none; font-size: 14px; opacity: 0.8; }
+.changelog-link:hover { opacity: 1; }
 
 .empty-state { padding: 50px 20px; text-align: center; color: var(--text-muted); font-size: 14px; }
 .empty-state-icon { font-size: 34px; margin-bottom: 10px; opacity: 0.6; }

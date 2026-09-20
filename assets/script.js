@@ -893,6 +893,21 @@ function renderVendors() {
   });
 }
 
+// Tự động đánh dấu bản MỚI NHẤT (isLatest) cho từng nhóm Hãng + Loại + Sản phẩm/Model,
+// dựa theo ngày upload gần nhất trong nhóm đó — giúp kỹ sư biết ngay nên dùng bản nào
+// khi 1 thiết bị có nhiều phiên bản đã lưu trữ (Firmware/OS/Patch cũ vẫn giữ lại để tra cứu).
+function computeLatestTags() {
+  const latestDateByGroup = {};
+  state.files.forEach((f) => {
+    const key = `${f.vendor}::${f.category}::${f.product}`;
+    if (!latestDateByGroup[key] || f.date > latestDateByGroup[key]) latestDateByGroup[key] = f.date;
+  });
+  state.files.forEach((f) => {
+    const key = `${f.vendor}::${f.category}::${f.product}`;
+    f.isLatest = f.status === "Active" && f.date === latestDateByGroup[key];
+  });
+}
+
 function getFilteredFiles() {
   let list = [...state.files];
 
@@ -916,7 +931,14 @@ function getFilteredFiles() {
   return list;
 }
 
+// Checksum coi như "chưa có dữ liệu thật" khi rỗng hoặc là 1 trong các ghi chú N/A
+// (file mẫu minh hoạ, file quá lớn không tính được, hoặc lỗi khi tính checksum).
+function hasRealChecksum(checksum) {
+  return !!checksum && !checksum.startsWith("N/A");
+}
+
 function renderFiles() {
+  computeLatestTags();
   const files = getFilteredFiles();
   fileTableBody.innerHTML = "";
 
@@ -934,10 +956,20 @@ function renderFiles() {
     const actionBtn = f.driveLink
       ? `<button class="link-btn" data-action="open" data-idx="${idx}">🔗 Mở trên Drive</button>`
       : `<button class="btn btn-outline btn-small" data-action="download" data-idx="${idx}">⬇️ Tải xuống</button>`;
+    const checksumBtn = hasRealChecksum(f.checksum)
+      ? `<button class="link-btn" data-action="checksum" data-idx="${idx}" title="${f.checksum}">🔑 Checksum</button>`
+      : "";
+    const changelogLink = f.changelog
+      ? `<a class="changelog-link" href="${f.changelog}" target="_blank" rel="noopener" title="Xem Release Notes / Change Log">📝</a>`
+      : "";
+    const latestBadge = f.isLatest
+      ? `<span class="badge badge-latest" title="Phiên bản mới nhất đang lưu trữ cho model này">🏆 Mới nhất</span>`
+      : "";
     tr.innerHTML = `
       <td class="file-name" data-label="Tên file">
         <span class="file-icon-badge cat-${catClass}">${CATEGORY_ICON[f.category] || "📄"}</span>
         <span>${fileLabel}</span>
+        ${changelogLink}
       </td>
       <td data-label="Hãng">${vendorName(f.vendor)}</td>
       <td data-label="Loại">${f.category}</td>
@@ -945,8 +977,11 @@ function renderFiles() {
       <td data-label="Version">${f.version}</td>
       <td data-label="Ngày upload">${f.date}</td>
       <td data-label="Người upload">${f.user}</td>
-      <td data-label="Trạng thái"><span class="badge badge-${f.status}">${f.status}</span></td>
-      <td class="row-actions" data-label="Thao tác">${actionBtn}</td>
+      <td data-label="Trạng thái">
+        <span class="badge badge-${f.status}">${f.status}</span>
+        ${latestBadge}
+      </td>
+      <td class="row-actions" data-label="Thao tác">${actionBtn}${checksumBtn}</td>
     `;
     fileTableBody.appendChild(tr);
   });
@@ -957,6 +992,22 @@ function renderFiles() {
   fileTableBody.querySelectorAll('[data-action="open"]').forEach((btn) => {
     btn.addEventListener("click", () => window.open(files[Number(btn.dataset.idx)].driveLink, "_blank"));
   });
+  fileTableBody.querySelectorAll('[data-action="checksum"]').forEach((btn) => {
+    btn.addEventListener("click", () => copyChecksum(files[Number(btn.dataset.idx)]));
+  });
+}
+
+// Copy checksum SHA-256 của file vào clipboard để kỹ sư dán vào lệnh verify
+// (VD: `Get-FileHash` trên Windows hoặc `sha256sum` trên Linux) sau khi tải file về.
+function copyChecksum(file) {
+  if (!hasRealChecksum(file.checksum)) {
+    toast("File này chưa có checksum SHA-256 (dữ liệu mẫu minh hoạ).", "info");
+    return;
+  }
+  navigator.clipboard
+    .writeText(file.checksum)
+    .then(() => toast(`Đã copy checksum SHA-256 của "${file.product} — ${file.version}".`, "success"))
+    .catch(() => toast(`Checksum SHA-256: ${file.checksum}`, "info", 9000));
 }
 
 function downloadFile(file) {
@@ -1059,6 +1110,21 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
   const changelog = document.getElementById("fChangelog").value.trim();
   const fileObj = fFileInput.files[0];
   if (!product || !version || !fileObj) return;
+
+  // --- Versioning: KHÔNG ghi đè, chỉ cảnh báo nếu đúng phiên bản này đã có sẵn cho
+  // cùng Hãng/Loại/Sản phẩm — mọi bản upload đều được giữ lại (lưu lịch sử) trên
+  // Drive lẫn Master-Index, kỹ sư tự quyết định có tải bản trùng version hay không. ---
+  const duplicateVersion = state.files.find(
+    (f) => f.vendor === vendorId && f.category === category && f.product === product && f.version === version
+  );
+  if (duplicateVersion) {
+    const proceed = window.confirm(
+      `Phiên bản "${version}" của "${product}" đã tồn tại trong danh mục (upload ngày ${duplicateVersion.date} bởi ${duplicateVersion.user}).\n\n` +
+      `Tiếp tục sẽ tải lên thêm 1 bản mới (không ghi đè bản cũ, cả 2 vẫn được giữ lại để tra cứu lịch sử).\n\n` +
+      `Bạn có muốn tiếp tục không?`
+    );
+    if (!proceed) return;
+  }
 
   const baseRecord = {
     vendor: vendorId,
