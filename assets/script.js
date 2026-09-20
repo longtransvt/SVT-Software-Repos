@@ -18,7 +18,15 @@ const DRIVE_CONFIG = {
   CLIENT_ID: "11402124429-ieasmd98scuah6hd8tv3gqb15u1quf6c.apps.googleusercontent.com",
   // spreadsheets scope cần thiết để ghi log vào Master-Index (Sheet có sẵn,
   // không do app tạo ra nên drive.file không đủ quyền ghi).
-  SCOPES: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets",
+  // openid/email/profile: lấy thông tin tài khoản đăng nhập (họ tên, email, ảnh đại diện)
+  // để hiển thị lên giao diện và ghi đúng "Uploaded By" thay vì tên giả định.
+  SCOPES:
+    "https://www.googleapis.com/auth/drive.file " +
+    "https://www.googleapis.com/auth/spreadsheets " +
+    "openid email profile",
+  // Chỉ chấp nhận đăng nhập bằng email thuộc domain công ty (Google Workspace).
+  // Để trống ("") nếu muốn cho phép mọi tài khoản Google đăng nhập.
+  ALLOWED_DOMAIN: "svtech.com.vn",
   DRIVE_ID: "0AKLK-dRArCLLUk9PVA", // Shared Drive "[BẢO MẬT]_SYSTEM HCM"
   CATEGORY_FOLDER_IDS: {
     Firmware: "1DlMPVRh9zOgo5wWkPQGLRr8nqV4F0obp",     // FW-REPO/01_Firmware
@@ -79,6 +87,7 @@ const state = {
   accessToken: null,   // token OAuth hiện tại (chỉ giữ trong bộ nhớ, không lưu localStorage)
   tokenClient: null,   // Google Identity Services token client
   folderCache: {},     // cache "category::vendorName" -> folderId (tránh gọi API lặp lại)
+  currentUser: null,   // { email, name, picture } của người đang đăng nhập
 };
 
 // ---- DOM refs ----
@@ -97,6 +106,9 @@ const progressWrap = document.getElementById("progressWrap");
 const progressFill = document.getElementById("progressFill");
 const progressLabel = document.getElementById("progressLabel");
 const submitUploadBtn = document.getElementById("submitUploadBtn");
+const userAvatarEl = document.getElementById("userAvatar");
+const userLabelEl = document.getElementById("userLabel");
+const logoutBtnEl = document.getElementById("logoutBtn");
 
 function vendorName(id) {
   const v = state.vendors.find((v) => v.id === id);
@@ -136,30 +148,95 @@ function initGoogleAuth() {
   state.tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: DRIVE_CONFIG.CLIENT_ID,
     scope: DRIVE_CONFIG.SCOPES,
-    callback: (resp) => {
+    callback: async (resp) => {
       if (resp.error) {
-        alert("Đăng nhập Google Drive thất bại: " + resp.error);
+        alert("Đăng nhập Google thất bại: " + resp.error);
         return;
       }
       state.accessToken = resp.access_token;
+      try {
+        await fetchUserInfo();
+      } catch (err) {
+        console.error(err);
+        alert("Đăng nhập thành công nhưng không lấy được thông tin tài khoản: " + err.message);
+      }
       updateConnectionUI(true);
     },
   });
 }
 
+// Gọi Google UserInfo endpoint để lấy email/tên/ảnh của người vừa đăng nhập,
+// đồng thời kiểm tra domain công ty nếu ALLOWED_DOMAIN được cấu hình.
+async function fetchUserInfo() {
+  const resp = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+    headers: driveHeaders(),
+  });
+  if (!resp.ok) throw new Error(`Không lấy được thông tin tài khoản (HTTP ${resp.status})`);
+  const info = await resp.json();
+
+  if (DRIVE_CONFIG.ALLOWED_DOMAIN && !info.email.toLowerCase().endsWith("@" + DRIVE_CONFIG.ALLOWED_DOMAIN.toLowerCase())) {
+    signOut();
+    alert(
+      `Tài khoản "${info.email}" không thuộc domain công ty (@${DRIVE_CONFIG.ALLOWED_DOMAIN}).\n` +
+      "Vui lòng đăng nhập lại bằng email công ty."
+    );
+    throw new Error("Sai domain tài khoản");
+  }
+
+  state.currentUser = { email: info.email, name: info.name || info.email, picture: info.picture || "" };
+}
+
+function initialsOf(name) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(-2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
+
 function updateConnectionUI(connected) {
-  if (connected) {
-    connectDriveBtn.textContent = "✅ Đã kết nối Google Drive";
+  if (connected && state.currentUser) {
+    connectDriveBtn.textContent = "✅ Đã đăng nhập";
     connectDriveBtn.classList.add("btn-connected");
-    uploadHintEl.textContent = "✅ Đã kết nối Google Drive. File sẽ được upload thẳng vào thư mục hãng/loại tương ứng.";
+    uploadHintEl.textContent = "✅ Đã đăng nhập Google. File sẽ được upload thẳng vào thư mục hãng/loại tương ứng.";
     uploadHintEl.classList.add("connected");
+
+    userLabelEl.textContent = state.currentUser.name;
+    userLabelEl.title = state.currentUser.email;
+    if (state.currentUser.picture) {
+      userAvatarEl.innerHTML = `<img src="${state.currentUser.picture}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    } else {
+      userAvatarEl.textContent = initialsOf(state.currentUser.name);
+    }
+    logoutBtnEl.style.display = "inline";
   } else {
-    connectDriveBtn.textContent = "🔗 Kết nối Google Drive";
+    connectDriveBtn.textContent = "🔐 Đăng nhập bằng Google";
     connectDriveBtn.classList.remove("btn-connected");
-    uploadHintEl.textContent = '⚠️ Chưa kết nối Google Drive. Bấm "🔗 Kết nối Google Drive" ở góc trên trước khi tải lên.';
+    uploadHintEl.textContent = '⚠️ Chưa đăng nhập Google. Bấm "🔐 Đăng nhập bằng Google" ở góc trên trước khi tải lên.';
     uploadHintEl.classList.remove("connected");
+
+    userAvatarEl.textContent = "?";
+    userLabelEl.textContent = "Chưa đăng nhập";
+    userLabelEl.title = "";
+    logoutBtnEl.style.display = "none";
   }
 }
+
+function signOut() {
+  if (state.accessToken && google?.accounts?.oauth2?.revoke) {
+    google.accounts.oauth2.revoke(state.accessToken, () => {});
+  }
+  state.accessToken = null;
+  state.currentUser = null;
+  state.folderCache = {};
+  updateConnectionUI(false);
+}
+
+logoutBtnEl.addEventListener("click", (e) => {
+  e.stopPropagation();
+  signOut();
+});
 
 connectDriveBtn.addEventListener("click", () => {
   if (!isDriveConfigured()) {
@@ -329,7 +406,7 @@ async function appendToMasterIndex(record) {
 // dùng chính access token của người bấm nút — không cần chia sẻ quyền cho ai khác).
 async function createMasterIndexSheet() {
   if (!state.accessToken) {
-    alert("Vui lòng bấm '🔗 Kết nối Google Drive' trước.");
+    alert("Vui lòng bấm '🔐 Đăng nhập bằng Google' trước.");
     return;
   }
   if (isMasterIndexConfigured()) {
@@ -560,7 +637,7 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
     version,
     changelog,
     date: new Date().toISOString().slice(0, 10),
-    user: "kỹ sư demo",
+    user: state.currentUser ? state.currentUser.email : "kỹ sư demo (chưa đăng nhập)",
     status: "Active",
     driveLink: null,
     checksum: "",

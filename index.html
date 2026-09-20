@@ -23,12 +23,13 @@
   </div>
 
   <div class="topbar-actions">
-    <button class="btn btn-outline" id="connectDriveBtn">🔗 Kết nối Google Drive</button>
+    <button class="btn btn-outline" id="connectDriveBtn">🔐 Đăng nhập bằng Google</button>
     <button class="btn btn-outline" id="initSheetBtn" title="Chỉ cần chạy 1 lần để tạo Google Sheet Master-Index">🛠️ Khởi tạo Master-Index</button>
     <button class="btn btn-primary" id="openUploadBtn">⬆️ Tải lên phiên bản mới</button>
-    <div class="user-chip">
-      <span class="avatar">KS</span>
-      <span>Kỹ sư demo</span>
+    <div class="user-chip" id="userChip">
+      <span class="avatar" id="userAvatar">?</span>
+      <span id="userLabel">Chưa đăng nhập</span>
+      <button class="link-btn" id="logoutBtn" style="display:none;">Đăng xuất</button>
     </div>
   </div>
 </header>
@@ -136,7 +137,7 @@
         <input type="file" id="fFile" required>
       </div>
       <p class="hint" id="uploadHint">
-        ⚠️ Chưa kết nối Google Drive. Bấm "🔗 Kết nối Google Drive" ở góc trên trước khi tải lên
+        ⚠️ Chưa đăng nhập Google. Bấm "🔐 Đăng nhập bằng Google" ở góc trên trước khi tải lên
         để file được ghi trực tiếp vào thư mục hãng/loại tương ứng trên Drive.
       </p>
       <div class="progress-wrap" id="progressWrap" style="display:none;">

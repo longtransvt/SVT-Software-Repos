@@ -48,9 +48,10 @@ Vào **APIs & Services → Library** → tìm **Google Sheets API** → bấm **
 2. Nếu công ty dùng **Google Workspace**, chọn **Internal** (chỉ nhân viên nội bộ mới đăng nhập được) — khuyến nghị cho hệ thống nội bộ này.
    - Nếu không dùng Workspace, chọn **External** và thêm các email kỹ sư vào mục **Test users** (khi ở chế độ Testing).
 3. Điền tên ứng dụng (vd "IT Software Repository Portal"), email hỗ trợ.
-4. Ở mục **Scopes**, thêm 2 scope:
+4. Ở mục **Scopes**, thêm 3 nhóm scope:
    - `https://www.googleapis.com/auth/drive.file` — chỉ cho phép ứng dụng truy cập những file/thư mục do chính nó tạo hoặc được cấp quyền (an toàn hơn `drive` toàn quyền).
    - `https://www.googleapis.com/auth/spreadsheets` — cần thiết để ghi log vào Google Sheet **Master-Index** có sẵn (không do app tạo ra nên `drive.file` không đủ quyền).
+   - `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile` (thường gộp sẵn khi bạn chọn "See your primary Google Account email address" và "See your personal info") — dùng để nhận diện đúng người đăng nhập (họ tên, email, ảnh đại diện) hiển thị trên giao diện và ghi vào cột "Uploaded By".
 
 ## Bước 3 — Tạo OAuth Client ID
 1. **APIs & Services → Credentials → Create Credentials → OAuth client ID**.
@@ -109,17 +110,24 @@ const DRIVE_CONFIG = {
 
 ## Bước 6 — Host & chạy thử
 - Host portal qua HTTP(S) đúng domain đã khai báo ở Bước 3 (OAuth không hoạt động khi mở trực tiếp file `file://`).
-- Mở portal → bấm **"Kết nối Google Drive"** → đăng nhập bằng tài khoản Google Workspace công ty → **Allow**.
-- Sau khi kết nối, mở **"Tải lên phiên bản mới"**: chọn hãng, loại, điền metadata, chọn file → bấm **Tải lên**.
+- Mở portal → bấm **"🔐 Đăng nhập bằng Google"** → đăng nhập bằng tài khoản Google Workspace công ty → **Allow**.
+- Sau khi đăng nhập, mở **"Tải lên phiên bản mới"**: chọn hãng, loại, điền metadata, chọn file → bấm **Tải lên**.
   - Ứng dụng sẽ tự tìm hoặc tạo thư mục con theo tên hãng bên trong thư mục loại tương ứng, rồi upload file vào đó bằng resumable upload (có thanh tiến trình %).
   - Sau khi upload xong, dòng file mới trong bảng sẽ có link **"Mở trên Drive"** trỏ thẳng tới file thật.
 
+## Đăng nhập theo Google email
+- Nút **"🔐 Đăng nhập bằng Google"** ở góc trên vừa xin quyền truy cập Drive/Sheets, vừa lấy thông tin tài khoản (họ tên, email, ảnh đại diện) qua Google UserInfo endpoint.
+- Sau khi đăng nhập, góc trên bên phải hiển thị đúng ảnh đại diện + tên thật của kỹ sư (thay cho "Kỹ sư demo" cũ), kèm nút **"Đăng xuất"**.
+- Cột **"Người upload"** trong bảng và cột **"Uploaded By"** ghi vào Master-Index Sheet sẽ tự lấy đúng email Google của người đang đăng nhập — không cần nhập tay.
+- Có kiểm tra domain: `DRIVE_CONFIG.ALLOWED_DOMAIN` (mặc định `svtech.com.vn`). Nếu ai đó đăng nhập bằng tài khoản Gmail cá nhân hoặc domain khác, hệ thống tự đăng xuất và báo lỗi. Đặt thành `""` nếu muốn cho phép mọi tài khoản Google.
+- Bấm **"Đăng xuất"** để thu hồi quyền truy cập (revoke token) và quay lại trạng thái "Chưa đăng nhập".
+
 ## Kiểm tra kết nối (checklist nhanh)
-1. Mở Console trình duyệt (F12) trước khi bấm "Kết nối Google Drive" để theo dõi lỗi nếu có.
-2. Bấm **Kết nối Google Drive** → nếu hiện popup chọn tài khoản Google → chọn đúng tài khoản Workspace công ty → màn hình xin quyền hiển thị đúng 2 quyền (Drive, Sheets) → **Allow**.
-3. Nút chuyển thành **"✅ Đã kết nối Google Drive"** (nền xanh) là đã lấy được access token thành công.
-4. Thử upload 1 file nhỏ (vd ảnh test), theo dõi thanh tiến trình chạy tới 100%, sau đó dòng mới xuất hiện với nút **"🔗 Mở trên Drive"** — bấm vào để xác nhận file đã nằm đúng thư mục hãng/loại trên Drive.
-5. Vào Google Sheet Master-Index kiểm tra đã có thêm 1 dòng mới tương ứng.
+1. Mở Console trình duyệt (F12) trước khi bấm "🔐 Đăng nhập bằng Google" để theo dõi lỗi nếu có.
+2. Bấm **Đăng nhập bằng Google** → nếu hiện popup chọn tài khoản Google → chọn đúng tài khoản Workspace công ty → màn hình xin quyền hiển thị Drive, Sheets và thông tin tài khoản → **Allow**.
+3. Nút chuyển thành **"✅ Đã đăng nhập"** (nền xanh), góc trên bên phải hiện đúng tên/ảnh đại diện thật là đã đăng nhập thành công.
+4. Thử upload 1 file nhỏ (vd ảnh test), theo dõi thanh tiến trình chạy tới 100%, sau đó dòng mới xuất hiện với nút **"🔗 Mở trên Drive"** và cột "Người upload" đúng email vừa đăng nhập.
+5. Vào Google Sheet Master-Index kiểm tra đã có thêm 1 dòng mới, cột "Uploaded By" đúng email thật.
 
 ## Sự cố thường gặp
 | Lỗi | Nguyên nhân | Cách khắc phục |
@@ -128,10 +136,12 @@ const DRIVE_CONFIG = {
 | "This app isn't verified" | Đang dùng OAuth External + chưa xác minh app | Bấm Advanced → Go to (unsafe) để tiếp tục (không ảnh hưởng chức năng), hoặc chuyển sang Internal nếu có Workspace |
 | HTTP 403 khi upload / tạo folder | Tài khoản đăng nhập chưa được cấp quyền Content Manager/Editor trên Shared Drive | Nhờ quản trị Shared Drive thêm tài khoản vào đúng vai trò |
 | HTTP 404 khi ghi Master-Index | `MASTER_INDEX_SHEET_ID` sai hoặc tài khoản chưa có quyền Editor trên Sheet | Kiểm tra lại Sheet ID và quyền chia sẻ |
-| Nút "Kết nối Google Drive" báo "Chưa cấu hình Google Drive" | Chưa điền đủ `CLIENT_ID`/`CATEGORY_FOLDER_IDS` trong `assets/script.js` | Hoàn tất Bước 5 |
+| Nút "Đăng nhập bằng Google" báo "Chưa cấu hình Google Drive" | Chưa điền đủ `CLIENT_ID`/`CATEGORY_FOLDER_IDS` trong `assets/script.js` | Hoàn tất Bước 5 |
+| Đăng nhập xong bị tự đăng xuất kèm cảnh báo sai domain | Đăng nhập bằng tài khoản Gmail cá nhân hoặc domain khác `svtech.com.vn` | Đăng nhập lại đúng bằng email công ty, hoặc chỉnh `ALLOWED_DOMAIN` nếu muốn nới lỏng |
 
 ## Ghi chú bảo mật
 - Scope `drive.file` giới hạn quyền truy cập chỉ trong phạm vi file do app tạo/được chia sẻ — không đọc được toàn bộ Drive của người dùng.
 - Access token chỉ lưu tạm trong bộ nhớ trình duyệt (biến JS), không lưu localStorage, hết phiên phải đăng nhập lại.
 - Không public Client ID kèm quyền ghi vào domain lạ — chỉ khai báo đúng origin nội bộ ở Bước 3.
+- `ALLOWED_DOMAIN` chỉ là lớp kiểm tra bổ sung phía client; lớp bảo vệ chính vẫn là OAuth consent screen **Internal** (chỉ nhân viên trong domain Workspace mới đăng nhập được ngay từ đầu).
 - Với dữ liệu nhạy cảm/tuân thủ cao hơn, cân nhắc thêm lớp backend (Google Apps Script hoặc Cloud Function) để kiểm soát ghi log, virus-scan trước khi đẩy lên Drive.
