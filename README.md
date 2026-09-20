@@ -5,59 +5,41 @@
 - Kỹ sư dễ dàng tìm, tải lên phiên bản mới, tải xuống phiên bản cần dùng.
 - Kiểm soát phiên bản, quyền truy cập, có nhật ký thay đổi (audit trail).
 
-## 2. Cấu trúc thư mục đề xuất trên Shared Drive
+## 2. Cấu trúc thư mục thực tế trên Shared Drive (theo Hãng trước)
 
 ```
-📁 IT-Software-Repository (Shared Drive)
+📁 FW-REPO (Shared Drive: [BẢO MẬT]_SYSTEM HCM)
 │
 ├── 📁 00_INDEX_METADATA
-│   ├── 📄 Master-Index.gsheet          # Google Sheet: danh mục tất cả file (version, ngày, checksum, người upload)
-│   ├── 📄 Naming-Convention.pdf
-│   └── 📄 Upload-Guideline.pdf
+│   ├── 📄 Master-Index      # Google Sheet: danh mục tất cả file (version, ngày, checksum, người upload)
+│   └── 📄 Master-Data       # tab riêng trong Master-Index: danh mục Hãng + Sản phẩm/Model dùng chung
 │
-├── 📁 01_Firmware
-│   ├── 📁 Hitachi
-│   │   ├── 📁 Storage-VSP-Series
-│   │   ├── 📁 Storage-HUS-Series
-│   │   └── 📁 _Archive
-│   ├── 📁 HPE
-│   │   ├── 📁 ProLiant-Servers
-│   │   ├── 📁 Storage-3PAR-Primera
-│   │   ├── 📁 Aruba-Networking
-│   │   └── 📁 _Archive
-│   ├── 📁 Dell
-│   │   ├── 📁 PowerEdge-Servers
-│   │   ├── 📁 PowerVault-Storage
-│   │   └── 📁 _Archive
-│   ├── 📁 Cisco
-│   │   ├── 📁 Switches-Nexus-Catalyst
-│   │   ├── 📁 UCS-Servers
-│   │   └── 📁 _Archive
-│   ├── 📁 NetApp
-│   │   ├── 📁 ONTAP-Firmware
-│   │   └── 📁 _Archive
-│   └── 📁 Others (Fortinet, Juniper, IBM, Lenovo...)
+├── 📁 Hitachi
+│   ├── 📁 01_Firmware  (Storage-VSP-Series, Storage-HUS-Series, _Archive, ...)
+│   ├── 📁 02_Application
+│   ├── 📁 03_OS
+│   ├── 📁 04_Patch_OS
+│   └── 📁 99_Archive
 │
-├── 📁 02_Application
-│   ├── 📁 Oracle (Database, WebLogic, Java)
-│   ├── 📁 Microsoft (SQL Server, Exchange, SharePoint)
-│   ├── 📁 VMware (vSphere, vCenter, NSX)
-│   └── 📁 Others
+├── 📁 HPE
+│   ├── 📁 01_Firmware  (ProLiant-Servers, Storage-3PAR-Primera, Aruba-Networking, _Archive, ...)
+│   ├── 📁 02_Application
+│   ├── 📁 03_OS
+│   ├── 📁 04_Patch_OS
+│   └── 📁 99_Archive
 │
-├── 📁 03_OS
-│   ├── 📁 Microsoft-Windows-Server
-│   ├── 📁 RedHat-Linux (RHEL, ISO, Subscription)
-│   ├── 📁 VMware-ESXi
-│   └── 📁 Others (Ubuntu, SUSE, CentOS/Rocky)
-│
-├── 📁 04_Patch_OS
-│   ├── 📁 Windows-Updates (Cumulative, Security-Only)
-│   ├── 📁 RedHat-Errata (RHSA/RHBA/RHEA)
-│   ├── 📁 VMware-ESXi-Patches
-│   └── 📁 Others
-│
-└── 📁 99_Archive (phiên bản end-of-life, chờ huỷ theo retention policy)
+├── 📁 Dell        (01_Firmware: PowerEdge-Servers, PowerVault-Storage, _Archive | 02_Application | 03_OS | 04_Patch_OS | 99_Archive)
+├── 📁 Cisco       (01_Firmware: Switches-Nexus-Catalyst, UCS-Servers, _Archive | 02_Application | 03_OS | 04_Patch_OS | 99_Archive)
+├── 📁 NetApp      (01_Firmware: ONTAP-Firmware, _Archive | 02_Application | 03_OS | 04_Patch_OS | 99_Archive)
+├── 📁 Oracle      (01_Firmware | 02_Application | 03_OS | 04_Patch_OS | 99_Archive)
+├── 📁 Microsoft   (01_Firmware | 02_Application | 03_OS: Microsoft-Windows-Server | 04_Patch_OS: Windows-Updates | 99_Archive)
+├── 📁 RedHat      (01_Firmware | 02_Application | 03_OS: RedHat-Linux | 04_Patch_OS: RedHat-Errata | 99_Archive)
+├── 📁 VMware      (01_Firmware | 02_Application | 03_OS: VMware-ESXi | 04_Patch_OS: VMware-ESXi-Patches | 99_Archive)
+└── 📁 Others      (Fortinet, Juniper, IBM, Lenovo, Ubuntu, SUSE... — mỗi hãng cũng có đủ 5 thư mục con như trên)
 ```
+
+**Quy tắc:** mỗi hãng luôn có đúng 5 thư mục con cố định: `01_Firmware`, `02_Application`, `03_OS`, `04_Patch_OS`, `99_Archive`.
+Khi upload, app chọn đúng thư mục con theo loại file (Firmware/Application/OS/Patch) nằm bên trong đúng thư mục hãng — dùng Folder ID cố định đã cấu hình sẵn (xem `assets/script.js` → `VENDOR_CATEGORY_FOLDER_IDS`) nên không tạo trùng thư mục. Hãng mới thêm qua "+ Thêm hãng" sẽ được tự động tạo đủ cấu trúc 5 thư mục con này.
 
 ### Quy ước đặt tên file
 ```

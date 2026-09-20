@@ -4,10 +4,14 @@
    Xem hướng dẫn cấu hình đầy đủ tại: ../SETUP-GOOGLE-DRIVE.md
 
    Cách hoạt động:
-   1. Người dùng bấm "Kết nối Google Drive" -> Google Identity Services (GIS)
-      mở popup OAuth2, trả về access token (scope drive.file).
-   2. Khi upload: tìm (hoặc tạo mới) thư mục con theo tên hãng bên trong
-      thư mục loại (Firmware/Application/OS/Patch) đã cấu hình sẵn Folder ID.
+   1. Người dùng bấm "Đăng nhập bằng Google" -> Google Identity Services (GIS)
+      mở popup OAuth2, trả về access token + thông tin tài khoản.
+   2. Cấu trúc thư mục thật trên Drive là THEO HÃNG trước, mỗi hãng có sẵn
+      5 thư mục con cố định: 01_Firmware, 02_Application, 03_OS, 04_Patch_OS,
+      99_Archive. Khi upload, app dùng thẳng Folder ID đã cấu hình sẵn trong
+      VENDOR_CATEGORY_FOLDER_IDS bên dưới — KHÔNG tạo mới/tìm kiếm lại bằng tên
+      cho các hãng đã biết, để tránh tạo trùng thư mục do độ trễ index tìm kiếm
+      của Drive. Chỉ hãng MỚI (chưa có trong danh sách) mới dùng findOrCreateFolder.
    3. Upload file bằng Resumable Upload (hỗ trợ file lớn + progress %).
    4. File mới sẽ có link "Mở trên Drive" trỏ thẳng tới webViewLink thật.
    ========================================================================= */
@@ -28,11 +32,93 @@ const DRIVE_CONFIG = {
   // Để trống ("") nếu muốn cho phép mọi tài khoản Google đăng nhập.
   ALLOWED_DOMAIN: "svtech.com.vn",
   DRIVE_ID: "0AKLK-dRArCLLUk9PVA", // Shared Drive "[BẢO MẬT]_SYSTEM HCM"
-  CATEGORY_FOLDER_IDS: {
-    Firmware: "1DlMPVRh9zOgo5wWkPQGLRr8nqV4F0obp",     // FW-REPO/01_Firmware
-    Application: "1HUpl6OWw7PUJJonVbfUHK5IJVAm0aOTF",  // FW-REPO/02_Application
-    OS: "1Tu1RVAOvPOqq2gwf0bI4eOTap70t-_Dk",            // FW-REPO/03_OS
-    Patch: "1bH3p6BlIHyIrvFC3Xj3FotkorIG4dNK1",         // FW-REPO/04_Patch_OS
+  // Thư mục gốc FW-REPO — dùng làm nơi tự tạo folder cho HÃNG MỚI (chưa có sẵn ID cấu hình).
+  FW_REPO_ROOT_ID: "13WbsXxjez47VLrepNNZiolYZQtAWDy65",
+  // Map "Category" trong form upload -> tên thư mục con thật trên Drive.
+  CATEGORY_SUBFOLDER_NAMES: {
+    Firmware: "01_Firmware",
+    Application: "02_Application",
+    OS: "03_OS",
+    Patch: "04_Patch_OS",
+  },
+  // Folder ID CỐ ĐỊNH cho từng hãng + từng loại — lấy trực tiếp từ cấu trúc thật
+  // trên Shared Drive (FW-REPO/{Hãng}/{01_Firmware,02_Application,03_OS,04_Patch_OS}).
+  // Dùng thẳng ID này khi upload để KHÔNG tạo trùng thư mục.
+  VENDOR_CATEGORY_FOLDER_IDS: {
+    hitachi: {
+      Firmware: "1Wo5idilWXyzTAixF8BK0GTHL9t9KpSuI",
+      Application: "1kQL1AabUgrN6UM6mqdaLKyzicaFLd8Om",
+      OS: "1P8vJL_pi7Mtr9bzkJjgD2d0uee6M5nQY",
+      Patch: "1cPc2vIvSXTM0ars3NtwYg3sAEw7645o0",
+    },
+    hpe: {
+      Firmware: "1kD25q8PoDzpNubwv4K7WwqZ87PKx-bH9",
+      Application: "1QIaxUf8-0bKRQ1llwALV6wuzXzjBy37c",
+      OS: "12SoTUxhdEc7q-QitW299MS7mHbXTeJY-",
+      Patch: "1GRzJ9pdIRk0wUl35xF0eHlyjpkVO_WLy",
+    },
+    dell: {
+      Firmware: "16mkn7lmU2FrKWm9Rs6M5LtcEBUUaX1EN",
+      Application: "1rhnW4T85TcXbtUyckohJEnyPce4sI7qS",
+      OS: "1dTcNRJxNrMo07jUncFvvGTsKskXebwrn",
+      Patch: "1WaJB9VtkJ_OmnA8M3is2kR-0HcIht99X",
+    },
+    cisco: {
+      Firmware: "11hnVzZrju_ub42Rjh4KEB5k48i1RfcYX",
+      Application: "16Ij_TybeQq_JV2fcFT78gQsxGqyjye4_",
+      OS: "1nWtensCrnXvJC0J_fIn6tHZlZCIa21xq",
+      Patch: "1m6lcxmHpDTq1B56-2klsqiOVTzS6J2Vu",
+    },
+    netapp: {
+      Firmware: "13wFWLYmeZeZYzflnL7Fd3mbIpCVCz4ug",
+      Application: "1T-XTjMty30gvubezJFzESv7fxjTt0XZE",
+      OS: "1ZS3FeaXfZC17RxDJfr0Kr-OAwPnsI5ox",
+      Patch: "1zDD1s6PksVNFE30tSe6fQcqg2HbMhQB8",
+    },
+    oracle: {
+      Firmware: "10L0CrXPUw6X4y7_oegFIGhDaPB5Tri3h",
+      Application: "1gjSQ7CHmUE546vJD3Ue4VijmFkecLvTa",
+      OS: "1ZbfLROf8pVF_po1Ao9XhvwjMi_xeOBJT",
+      Patch: "1VkIC0Y84qzNLyeGqvZcBK2lyxLQP0UZZ",
+    },
+    microsoft: {
+      Firmware: "1lDpc700RBP6Gy8e6Day86feWVblrM2cA",
+      Application: "18CollD6sSBdu0l1eq5gtyZ5wTLQqqKTX",
+      OS: "1pAV44uwZilbDf__0D0CLfo5qmWfGgXgQ",
+      Patch: "1iCUW4a2zsplnYYVc5jS7jfcMWLm4KJu4",
+    },
+    redhat: {
+      Firmware: "1nlfTg9OoTdgLsrHbLM-MBa_rRKYvjOUi",
+      Application: "1sDZZQ6vFQKyRuENTsxPVYuNUaf5HpE9s",
+      OS: "1xaJL9x_y6SqSplR_lGBuKtLH0nQwhLSC",
+      Patch: "1S5ZHmkbnoYsqwik1oS1HIgkn8hIpqPfB",
+    },
+    vmware: {
+      Firmware: "1VfoeHd8TILEddaqA7SIn4yDvb7yzJBJQ",
+      Application: "1Tn_fTVEYuj9zA41QXIRedHnlcFHfMSpv",
+      OS: "1xCMfJCZ3IEqhHW4Yw1xZqw2jP0mQL9T5",
+      Patch: "1w1ur-Wj4DpI-OB9LLHrOoIEWWb2ibZwM",
+    },
+    others: {
+      Firmware: "1VTH0pqGn8u7c_F9vSZ3-X1b3VVVJbrPT",
+      Application: "1gWoDZTONJmsQg0l3zW_lcqqLjbTgTqVX",
+      OS: "1LKVZl94roRrK-FX1DlWZTyKN2-s1BXSs",
+      Patch: "14N21mA-XXeHJ76RTPDJWhAe-DypzUNDv",
+    },
+  },
+  // Folder gốc của từng hãng (chứa 5 thư mục con) — dùng khi cần tự tạo thêm
+  // category subfolder mới cho 1 hãng đã biết (trường hợp hiếm, ví dụ thêm loại mới).
+  VENDOR_ROOT_FOLDER_IDS: {
+    hitachi: "1S6RWT4fvnNhDJ989p-w_lbin1QL8xQvv",
+    hpe: "19iKHrEwD2kL-7G14ZOH9sO9M3km8CSqK",
+    dell: "1fSGRcqJ2T-4tRSp3SLudgmmfg_fyZb9K",
+    cisco: "1R8R8PFyuHeOlwdX7ufkqqR3APuKqg1Mv",
+    netapp: "1LIoooHv6z9cI7bXGL7UUafU6gfBklZfI",
+    oracle: "1DiGpws9HZpF9RzGJkEy3oKBiz1Xfd_xI",
+    microsoft: "14zS6wK3sWKd4nb9dBJozp2WtPlH58SwG",
+    redhat: "1RrI2U_L55gNh6AoWePoGkqME015yeK9P",
+    vmware: "16xUoJp71SCPFymuh-rHZG0e6XvbtjbAE",
+    others: "1nvpTo9oh91RQ7FaNnBkf1LsQLAE2E_ic",
   },
   // Master-Index Google Sheet: xem SETUP-GOOGLE-DRIVE.md mục "Ghi log Master-Index"
   MASTER_INDEX_SHEET_ID: "1gg_9rUin7h9APg5_i0sVLF6YFa7ztbEYWvDzWeHqwr4",
@@ -59,6 +145,8 @@ const DEFAULT_VENDORS = [
   { id: "oracle", name: "Oracle", icon: "🔴" },
   { id: "microsoft", name: "Microsoft Windows", icon: "🪟" },
   { id: "redhat", name: "RedHat Linux", icon: "🎩" },
+  { id: "vmware", name: "VMware", icon: "⚙️" },
+  { id: "others", name: "Others (Khác)", icon: "🗂️" },
 ];
 
 // ---- Dữ liệu mẫu để minh hoạ bảng danh sách file (không có trên Drive thật) ----
@@ -129,7 +217,8 @@ function isDriveConfigured() {
   return (
     DRIVE_CONFIG.CLIENT_ID &&
     !DRIVE_CONFIG.CLIENT_ID.startsWith("YOUR_") &&
-    Object.values(DRIVE_CONFIG.CATEGORY_FOLDER_IDS).every((id) => id && !id.startsWith("FOLDER_ID_"))
+    DRIVE_CONFIG.FW_REPO_ROOT_ID &&
+    !DRIVE_CONFIG.FW_REPO_ROOT_ID.startsWith("YOUR_")
   );
 }
 
@@ -258,7 +347,7 @@ connectDriveBtn.addEventListener("click", () => {
   if (!isDriveConfigured()) {
     alert(
       "Chưa cấu hình Google Drive.\n\n" +
-      "Vui lòng điền CLIENT_ID và CATEGORY_FOLDER_IDS trong assets/script.js.\n" +
+      "Vui lòng điền CLIENT_ID và FW_REPO_ROOT_ID trong assets/script.js.\n" +
       "Xem hướng dẫn chi tiết tại SETUP-GOOGLE-DRIVE.md."
     );
     return;
@@ -774,14 +863,25 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
     progressFill.style.width = "0%";
     progressLabel.textContent = "Đang chuẩn bị thư mục...";
 
-    const categoryFolderId = DRIVE_CONFIG.CATEGORY_FOLDER_IDS[category];
-    const vendorFolderId = await findOrCreateFolder(vendorLabel, categoryFolderId);
+    // Ưu tiên dùng Folder ID cố định đã cấu hình sẵn cho hãng + loại này
+    // (tránh gọi API tìm-kiếm-theo-tên có thể bị trễ index và tạo trùng thư mục).
+    let targetFolderId = DRIVE_CONFIG.VENDOR_CATEGORY_FOLDER_IDS[vendorId]?.[category];
+
+    if (!targetFolderId) {
+      // Hãng mới hoặc loại mới chưa có ID cấu hình sẵn -> tự tìm/tạo theo tên,
+      // dựa trên thư mục gốc của hãng (nếu đã biết) hoặc thư mục gốc FW-REPO.
+      const vendorRootId =
+        DRIVE_CONFIG.VENDOR_ROOT_FOLDER_IDS[vendorId] ||
+        (await findOrCreateFolder(vendorLabel, DRIVE_CONFIG.FW_REPO_ROOT_ID));
+      const categorySubfolderName = DRIVE_CONFIG.CATEGORY_SUBFOLDER_NAMES[category] || category;
+      targetFolderId = await findOrCreateFolder(categorySubfolderName, vendorRootId);
+    }
 
     progressLabel.textContent = "Đang tính checksum...";
     baseRecord.checksum = await computeChecksum(fileObj);
 
     progressLabel.textContent = "0%";
-    const result = await resumableUpload(fileObj, vendorFolderId, (pct) => {
+    const result = await resumableUpload(fileObj, targetFolderId, (pct) => {
       progressFill.style.width = pct + "%";
       progressLabel.textContent = pct + "%";
     });
