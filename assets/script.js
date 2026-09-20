@@ -27,7 +27,7 @@ const DRIVE_CONFIG = {
     Patch: "1bH3p6BlIHyIrvFC3Xj3FotkorIG4dNK1",         // FW-REPO/04_Patch_OS
   },
   // Master-Index Google Sheet: xem SETUP-GOOGLE-DRIVE.md mục "Ghi log Master-Index"
-  MASTER_INDEX_SHEET_ID: "YOUR_MASTER_INDEX_SHEET_ID",
+  MASTER_INDEX_SHEET_ID: "1gg_9rUin7h9APg5_i0sVLF6YFa7ztbEYWvDzWeHqwr4",
   MASTER_INDEX_SHEET_NAME: "Master-Index",
   // Folder 00_INDEX_METADATA — nơi nút "Khởi tạo Master-Index" sẽ tạo Sheet mới nếu chưa có
   INDEX_METADATA_FOLDER_ID: "1u60ljRoUaNLxuMr9R82CiuvaYpfpjv9a",
