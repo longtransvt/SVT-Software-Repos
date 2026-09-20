@@ -350,6 +350,17 @@ function initGoogleAuth() {
       } catch (err) {
         console.error("Đồng bộ Master-Data thất bại:", err);
       }
+
+      // Tải danh sách file THẬT đã có trên Drive (ghi log trong Master-Index),
+      // để bảng file hiển thị đúng dữ liệu thật thay vì chỉ dữ liệu mẫu minh hoạ.
+      try {
+        await loadFilesFromMasterIndex();
+        renderVendors();
+        renderFiles();
+        renderStats();
+      } catch (err) {
+        console.error("Tải danh sách file từ Master-Index thất bại:", err);
+      }
     },
   });
 }
@@ -614,6 +625,53 @@ async function appendToMasterIndex(record) {
     throw new Error(`Ghi Master-Index thất bại (HTTP ${resp.status}): ${errText}`);
   }
   return { skipped: false };
+}
+
+// Đọc toàn bộ dòng đã ghi log trong Master-Index (do các lần upload trước đây,
+// từ bất kỳ kỹ sư/máy nào) để bảng danh sách file trên trang LUÔN phản ánh đúng
+// dữ liệu thật đang có trên Google Drive — không chỉ tồn tại tạm trong bộ nhớ
+// của phiên trình duyệt hiện tại (tức là F5 lại trang hoặc máy khác mở lên vẫn
+// thấy đầy đủ, đúng theo Hãng/Loại đã phân loại khi upload).
+async function loadFilesFromMasterIndex() {
+  if (!isMasterIndexConfigured()) return;
+
+  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A2:J20000`;
+  const resp = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}/values/${encodeURIComponent(range)}`,
+    { headers: driveHeaders() }
+  );
+  if (!resp.ok) throw new Error(`Đọc Master-Index thất bại (HTTP ${resp.status})`);
+  const data = await resp.json();
+  const rows = data.values || [];
+
+  const records = rows
+    .filter((row) => row && row.length && row[0])
+    .map((row) => {
+      const [vendorLabel, category, product, version, date, user, checksum, changelog, status, driveLink] = row;
+      // Khớp lại Vendor ID nội bộ (dùng để lọc theo sidebar) từ tên Hãng đã ghi trong Sheet.
+      const matched = state.vendors.find(
+        (v) => v.name.toLowerCase() === (vendorLabel || "").toLowerCase()
+      );
+      const vendorId = matched ? matched.id : (vendorLabel || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      return {
+        vendor: vendorId,
+        vendorLabel: vendorLabel || vendorId,
+        category: category || "",
+        product: product || "",
+        version: version || "",
+        changelog: changelog || "",
+        date: date || "",
+        user: user || "",
+        status: status || "Active",
+        driveLink: driveLink || null,
+        checksum: checksum || "",
+        sizeBytes: 0, // Master-Index hiện chưa lưu dung lượng file
+      };
+    });
+
+  // Đã đọc được dữ liệu thật từ Master-Index -> thay thế toàn bộ dữ liệu mẫu minh hoạ,
+  // để bảng chỉ hiển thị đúng những gì thật sự đã upload lên Google Drive.
+  state.files = records.reverse();
 }
 
 // Master-Index Sheet ID đã được cấu hình cố định (MASTER_INDEX_SHEET_ID ở trên) —
