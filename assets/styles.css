@@ -484,8 +484,8 @@ body {
   position: relative;
   background: radial-gradient(900px 500px at 15% -10%, var(--svt-blue-700) 0%, var(--svt-navy-900) 60%);
   color: #fff;
-  padding: 40px 36px;
-  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 44px 40px;
+  display: flex; flex-direction: column; justify-content: center; gap: 32px;
   border-radius: var(--radius-lg) 0 0 var(--radius-lg);
   overflow: hidden;
 }
@@ -494,7 +494,7 @@ body {
   background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
   background-size: 22px 22px; opacity: 0.6;
 }
-.landing-brand-top, .landing-hero, .landing-stats { position: relative; z-index: 1; }
+.landing-brand-top, .landing-hero { position: relative; z-index: 1; }
 
 .landing-logo {
   height: 40px; padding: 6px 12px; background: rgba(255,255,255,0.95);
@@ -504,33 +504,20 @@ body {
 .landing-eyebrow {
   display: block; color: var(--svt-orange-400); font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px;
-  margin: 22px 0 10px;
+  margin: 0 0 10px;
 }
-.landing-hero h1 { font-size: 26px; margin: 0 0 10px; font-weight: 800; line-height: 1.3; color: #fff; }
+.landing-hero h1 { font-size: 27px; margin: 0 0 12px; font-weight: 800; line-height: 1.3; color: #fff; }
 .landing-hero h1 span { color: var(--svt-orange-400); }
-.landing-tagline { margin: 0 0 20px; font-size: 13.5px; color: #c7d3ec; line-height: 1.6; }
+.landing-tagline { margin: 0 0 22px; font-size: 13.5px; color: #c7d3ec; line-height: 1.6; }
 
 .landing-features {
-  list-style: none; margin: 0 0 20px; padding: 0;
-  display: flex; flex-direction: column; gap: 8px;
-  text-align: left; font-size: 12.5px;
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 10px;
+  text-align: left; font-size: 13px;
 }
 .landing-features li {
   display: flex; align-items: center; gap: 8px; color: #dce6fb;
 }
-
-.landing-vendors {
-  display: flex; flex-wrap: wrap; gap: 6px;
-  margin-bottom: 4px;
-}
-.landing-vendors span {
-  background: rgba(255,255,255,0.1); border-radius: 20px;
-  padding: 4px 10px; font-size: 11px;
-}
-
-.landing-stats { display: flex; gap: 24px; margin-top: 20px; }
-.landing-stats div strong { display: block; font-size: 20px; color: var(--svt-orange-400); font-weight: 800; }
-.landing-stats div span { font-size: 10.5px; color: #a9b8d8; }
 
 /* Right: login panel */
 .landing-login-panel {
@@ -550,11 +537,21 @@ body {
 
 .btn-google {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 12px 18px; border: 1.5px solid #dfe3ea; border-radius: 10px;
-  background: #fff; font-weight: 700; font-size: 14px; color: var(--text);
-  cursor: pointer; transition: 0.2s; margin-bottom: 10px;
+  padding: 14px 18px; border: none; border-radius: 10px;
+  background: linear-gradient(120deg, var(--svt-blue-600), var(--svt-blue-500));
+  font-weight: 800; font-size: 15px; color: #fff;
+  cursor: pointer; transition: 0.2s; margin-bottom: 12px;
+  box-shadow: 0 10px 24px rgba(28, 79, 168, 0.35);
 }
-.btn-google:hover { border-color: var(--svt-blue-500); box-shadow: 0 6px 18px rgba(47,111,214,0.15); }
+.btn-google svg { background: #fff; border-radius: 50%; padding: 2px; }
+.btn-google:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(28, 79, 168, 0.45); }
+.btn-google:active { transform: translateY(0); }
+
+.landing-login-panel .btn-outline {
+  background: transparent; border: 1.5px solid var(--border); color: var(--text-muted);
+  font-weight: 600; font-size: 13px; padding: 10px 18px;
+}
+.landing-login-panel .btn-outline:hover { border-color: var(--svt-blue-500); color: var(--svt-blue-600); }
 
 .landing-divider {
   display: flex; align-items: center; gap: 10px; margin: 20px 0 16px;
