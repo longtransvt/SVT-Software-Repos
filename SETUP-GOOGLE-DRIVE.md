@@ -126,14 +126,32 @@ const DRIVE_CONFIG = {
 - App tự tạo thêm 1 **tab riêng tên "Master-Data"** trong CHÍNH file Sheet Master-Index ở trên (không cần tạo tay) — tự động chạy lần đầu sau khi ai đó đăng nhập thành công.
 - Cấu trúc cột:
 
-  | A | B | C | D | E | F | G |
-  |---|---|---|---|---|---|---|
-  | Loại (Vendor/Product) | Vendor ID | Hãng Công Nghệ | Icon | Sản phẩm/Model | Thêm bởi | Ngày thêm |
+  | A | B | C | D | E | F | G | H | I | J | K | L | M |
+  |---|---|---|---|---|---|---|---|---|---|---|---|---|
+  | Loại (Vendor/Product) | Vendor ID | Hãng Công Nghệ | Icon | Sản phẩm/Model | Thêm bởi | Ngày thêm | Root Folder ID | Firmware Folder ID | Application Folder ID | OS Folder ID | Patch Folder ID | Archive Folder ID |
 
-- Khi kỹ sư bấm **"+ Thêm hãng"** và tạo hãng mới → tự động ghi 1 dòng `Vendor` vào tab này.
+- Khi kỹ sư bấm **"+ Thêm hãng"** và tạo hãng mới:
+  1. App **bắt buộc phải đăng nhập trước** (tài khoản có quyền truy cập Shared Drive).
+  2. App tự động tạo trên Drive thật đầy đủ 5 thư mục con giống các hãng có sẵn:
+     `{Hãng}/01_Firmware`, `02_Application`, `03_OS`, `04_Patch_OS`, `99_Archive` (dùng `findOrCreateFolder`
+     nên nếu thư mục đã tồn tại thì dùng lại, không tạo trùng).
+  3. Ghi 1 dòng `Vendor` vào tab Master-Data, kèm đầy đủ Folder ID (cột H–M) vừa tạo.
 - Khi upload file với **Sản phẩm/Model** chưa từng xuất hiện trước đó (theo đúng hãng) → tự động ghi thêm 1 dòng `Product` để lưu lại model mới.
-- Ngay sau khi đăng nhập, app đọc lại toàn bộ tab **Master-Data** và gộp các hãng đã lưu vào danh sách sidebar/dropdown — nhờ vậy **mọi kỹ sư dùng chung 1 danh mục**, không bị mất khi tải lại trang hay đổi máy khác.
-- Nếu chưa đăng nhập (chế độ demo), hãng mới thêm chỉ tồn tại tạm trong phiên trình duyệt hiện tại và sẽ mất khi tải lại trang — đăng nhập để lưu thật.
+- Ngay sau khi đăng nhập, app đọc lại toàn bộ tab **Master-Data**:
+  - Gộp các hãng đã lưu vào danh sách sidebar/dropdown — nhờ vậy **mọi kỹ sư dùng chung 1 danh mục**, không bị mất khi tải lại trang hay đổi máy khác.
+  - Đồng thời nạp luôn Folder ID (cột H–M) của các hãng do **người khác/máy khác** thêm vào cấu hình runtime (`VENDOR_ROOT_FOLDER_IDS`/`VENDOR_CATEGORY_FOLDER_IDS`) — nhờ vậy dù ai thêm hãng mới ở đâu, các kỹ sư khác upload cho hãng đó vẫn dùng đúng Folder ID có sẵn, **không bao giờ tạo trùng thư mục**.
+- Nếu chưa cấu hình Drive thật (chế độ demo/dev), hãng mới thêm chỉ tồn tại tạm trong phiên trình duyệt hiện tại và sẽ mất khi tải lại trang.
+
+## Bắt buộc đăng nhập trước khi Tải lên / Thêm hãng
+Khi hệ thống đã cấu hình Drive thật (`CLIENT_ID` + `FW_REPO_ROOT_ID`), app **yêu cầu đăng nhập Google trước** khi cho phép:
+- Mở modal "Tải lên phiên bản mới" và thực hiện submit.
+- Mở modal "+ Thêm hãng" và tạo hãng mới (vì cần quyền ghi để tạo thư mục thật + ghi Master-Data).
+
+Việc đăng nhập dùng Google Identity Services (OAuth2), giới hạn theo domain công ty (`ALLOWED_DOMAIN`).
+Quyền **thực sự** upload/download vào Shared Drive vẫn do chính Google Drive kiểm soát: nếu tài khoản
+đăng nhập không nằm trong danh sách thành viên Shared Drive (`[BẢO MẬT]_SYSTEM HCM`), các lệnh gọi API
+sẽ trả lỗi 403 và app sẽ hiển thị thông báo lỗi tương ứng — vì vậy chỉ cần cấp quyền truy cập Shared Drive
+đúng cho từng kỹ sư (qua Google Group nội bộ) là đủ để kiểm soát ai được upload/download.
 
 
 ## Bước 6 — Host & chạy thử

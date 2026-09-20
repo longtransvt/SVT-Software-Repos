@@ -407,6 +407,28 @@ async function findOrCreateFolder(name, parentId) {
   return folderId;
 }
 
+// Tạo đầy đủ cấu trúc thư mục cho 1 HÃNG MỚI, giống hệt các hãng đã có:
+// {Hãng}/01_Firmware, 02_Application, 03_OS, 04_Patch_OS, 99_Archive.
+// Trả về { root, Firmware, Application, OS, Patch, Archive } (đều là Folder ID thật).
+async function createVendorFolderStructure(vendorLabel, onProgress) {
+  onProgress?.(`Đang tạo thư mục hãng "${vendorLabel}"...`);
+  const root = await findOrCreateFolder(vendorLabel, DRIVE_CONFIG.FW_REPO_ROOT_ID);
+
+  const subfolders = [
+    ["Firmware", "01_Firmware"],
+    ["Application", "02_Application"],
+    ["OS", "03_OS"],
+    ["Patch", "04_Patch_OS"],
+    ["Archive", "99_Archive"],
+  ];
+  const folderIds = { root };
+  for (const [key, folderName] of subfolders) {
+    onProgress?.(`Đang tạo thư mục ${folderName}...`);
+    folderIds[key] = await findOrCreateFolder(folderName, root);
+  }
+  return folderIds;
+}
+
 // Upload file bằng Resumable Upload, trả về {id, webViewLink} + báo progress qua onProgress(percent)
 function resumableUpload(file, folderId, onProgress) {
   return new Promise((resolve, reject) => {
@@ -619,7 +641,7 @@ async function ensureMasterDataTab() {
       }),
     });
 
-    const headerRange = `${DRIVE_CONFIG.MASTER_DATA_SHEET_NAME}!A1:G1`;
+    const headerRange = `${DRIVE_CONFIG.MASTER_DATA_SHEET_NAME}!A1:M1`;
     await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(headerRange)}?valueInputOption=USER_ENTERED`,
       {
@@ -629,6 +651,8 @@ async function ensureMasterDataTab() {
           values: [[
             "Loại (Vendor/Product)", "Vendor ID", "Hãng Công Nghệ", "Icon",
             "Sản phẩm/Model", "Thêm bởi", "Ngày thêm",
+            "Root Folder ID", "Firmware Folder ID", "Application Folder ID",
+            "OS Folder ID", "Patch Folder ID", "Archive Folder ID",
           ]],
         }),
       }
@@ -643,7 +667,7 @@ async function loadMasterData() {
   if (!isMasterIndexConfigured()) return;
   try {
     await ensureMasterDataTab();
-    const range = `${DRIVE_CONFIG.MASTER_DATA_SHEET_NAME}!A2:G5000`;
+    const range = `${DRIVE_CONFIG.MASTER_DATA_SHEET_NAME}!A2:M5000`;
     const resp = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}/values/${encodeURIComponent(range)}`,
       { headers: driveHeaders() }
@@ -653,7 +677,7 @@ async function loadMasterData() {
     const rows = data.values || [];
 
     for (const row of rows) {
-      const [kind, vendorId, vendorLabel, icon, product] = row;
+      const [kind, vendorId, vendorLabel, icon, product, , , rootId, fwId, appId, osId, patchId] = row;
       if (!vendorId) continue;
 
       if (kind === "Vendor" && !state.vendors.some((v) => v.id === vendorId)) {
@@ -663,6 +687,23 @@ async function loadMasterData() {
         if (!state.productCatalog[vendorId]) state.productCatalog[vendorId] = new Set();
         state.productCatalog[vendorId].add(product);
       }
+
+      // Đồng bộ Folder ID của các hãng do NGƯỜI KHÁC thêm mới (từ máy khác) về
+      // cấu hình runtime của phiên hiện tại, để không phải tìm-kiếm-theo-tên
+      // (tránh tạo trùng thư mục) mỗi khi upload cho hãng đó.
+      if (kind === "Vendor" && rootId) {
+        if (!DRIVE_CONFIG.VENDOR_ROOT_FOLDER_IDS[vendorId]) {
+          DRIVE_CONFIG.VENDOR_ROOT_FOLDER_IDS[vendorId] = rootId;
+        }
+        if (!DRIVE_CONFIG.VENDOR_CATEGORY_FOLDER_IDS[vendorId] && (fwId || appId || osId || patchId)) {
+          DRIVE_CONFIG.VENDOR_CATEGORY_FOLDER_IDS[vendorId] = {
+            Firmware: fwId || "",
+            Application: appId || "",
+            OS: osId || "",
+            Patch: patchId || "",
+          };
+        }
+      }
     }
   } catch (err) {
     console.error("Không tải được Master-Data:", err);
@@ -670,7 +711,8 @@ async function loadMasterData() {
 }
 
 // Ghi 1 dòng mới (Hãng mới hoặc Sản phẩm/Model mới) vào tab "Master-Data".
-async function appendMasterDataRow({ kind, vendorId, vendorLabel, icon = "", product = "" }) {
+// folderIds (chỉ áp dụng khi kind === "Vendor"): { root, Firmware, Application, OS, Patch, Archive }
+async function appendMasterDataRow({ kind, vendorId, vendorLabel, icon = "", product = "", folderIds = null }) {
   if (!isMasterIndexConfigured() || !state.accessToken) return;
   await ensureMasterDataTab();
 
@@ -678,8 +720,14 @@ async function appendMasterDataRow({ kind, vendorId, vendorLabel, icon = "", pro
     kind, vendorId, vendorLabel, icon, product,
     state.currentUser ? state.currentUser.email : "",
     new Date().toISOString().slice(0, 10),
+    folderIds?.root || "",
+    folderIds?.Firmware || "",
+    folderIds?.Application || "",
+    folderIds?.OS || "",
+    folderIds?.Patch || "",
+    folderIds?.Archive || "",
   ];
-  const range = `${DRIVE_CONFIG.MASTER_DATA_SHEET_NAME}!A:G`;
+  const range = `${DRIVE_CONFIG.MASTER_DATA_SHEET_NAME}!A:M`;
   const url =
     `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}` +
     `/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
@@ -814,6 +862,13 @@ function refreshVendorSelect() {
 }
 
 document.getElementById("openUploadBtn").addEventListener("click", () => {
+  if (isDriveConfigured() && !state.accessToken) {
+    alert(
+      "Bạn cần đăng nhập bằng tài khoản Google có quyền truy cập Shared Drive trước khi tải lên.\n" +
+      "Bấm '🔐 Đăng nhập bằng Google' ở góc trên, sau đó thử lại."
+    );
+    return;
+  }
   refreshVendorSelect();
   progressWrap.style.display = "none";
   progressFill.style.width = "0%";
@@ -849,8 +904,18 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
     checksum: "",
   };
 
-  // --- Trường hợp chưa kết nối Drive: chỉ demo trong bảng, không upload thật ---
-  if (!state.accessToken || !isDriveConfigured()) {
+  // --- Bắt buộc đăng nhập Google (tài khoản có quyền truy cập Shared Drive)
+  // khi hệ thống đã cấu hình Drive thật — không cho phép upload "chui" ẩn danh. ---
+  if (isDriveConfigured() && !state.accessToken) {
+    alert(
+      "Bạn cần đăng nhập bằng tài khoản Google có quyền truy cập Shared Drive trước khi tải lên.\n" +
+      "Bấm '🔐 Đăng nhập bằng Google' ở góc trên, sau đó thử lại."
+    );
+    return;
+  }
+
+  // --- Trường hợp CHƯA cấu hình Drive (môi trường demo/dev): chỉ minh hoạ trong bảng. ---
+  if (!isDriveConfigured()) {
     state.files.unshift(baseRecord);
     finishUploadUI();
     return;
@@ -944,7 +1009,21 @@ function finishUploadUI() {
 // ========================================================================
 
 const vendorOverlay = document.getElementById("vendorModalOverlay");
-document.getElementById("addVendorBtn").addEventListener("click", () => vendorOverlay.classList.add("open"));
+const vendorStatusLabel = document.getElementById("vendorStatusLabel");
+const submitVendorBtn = document.getElementById("submitVendorBtn");
+
+document.getElementById("addVendorBtn").addEventListener("click", () => {
+  if (isDriveConfigured() && !state.accessToken) {
+    alert(
+      "Bạn cần đăng nhập bằng tài khoản Google có quyền truy cập Shared Drive trước khi thêm hãng mới\n" +
+      "(hệ thống sẽ tự tạo cấu trúc thư mục thật trên Drive cho hãng đó).\n" +
+      "Bấm '🔐 Đăng nhập bằng Google' ở góc trên, sau đó thử lại."
+    );
+    return;
+  }
+  vendorStatusLabel.textContent = "";
+  vendorOverlay.classList.add("open");
+});
 document.getElementById("closeVendorModal").addEventListener("click", () => vendorOverlay.classList.remove("open"));
 document.getElementById("cancelVendorBtn").addEventListener("click", () => vendorOverlay.classList.remove("open"));
 
@@ -959,24 +1038,68 @@ document.getElementById("vendorForm").addEventListener("submit", async (e) => {
     alert(`Hãng "${name}" đã có trong danh mục.`);
     return;
   }
-  // Thư mục con thật trên Drive sẽ được tự tạo (findOrCreateFolder) ngay lần
-  // đầu tiên có ai đó upload file cho hãng này, không cần tạo trước ở đây.
-  state.vendors.push({ id, name, icon });
 
-  // Lưu vào Master-Data để mọi kỹ sư khác cùng thấy hãng mới này (chỉ khi đã đăng nhập).
-  if (state.accessToken && isMasterIndexConfigured()) {
-    try {
-      await appendMasterDataRow({ kind: "Vendor", vendorId: id, vendorLabel: name, icon });
-    } catch (err) {
-      console.error(err);
-      alert("Đã thêm hãng trên giao diện, nhưng lưu vào Master-Data thất bại: " + err.message);
-    }
+  // --- Chưa cấu hình Drive thật (môi trường demo/dev): chỉ thêm trên giao diện. ---
+  if (!isDriveConfigured()) {
+    state.vendors.push({ id, name, icon });
+    vendorOverlay.classList.remove("open");
+    e.target.reset();
+    renderVendors();
+    refreshVendorSelect();
+    return;
   }
 
-  vendorOverlay.classList.remove("open");
-  e.target.reset();
-  renderVendors();
-  refreshVendorSelect();
+  // --- Bắt buộc đăng nhập bằng tài khoản có quyền truy cập Shared Drive để tạo thư mục thật. ---
+  if (!state.accessToken) {
+    alert("Vui lòng đăng nhập bằng tài khoản Google có quyền truy cập Shared Drive trước khi thêm hãng mới.");
+    return;
+  }
+
+  try {
+    submitVendorBtn.disabled = true;
+    // Tự động tạo đầy đủ cấu trúc thư mục trên Drive: {Hãng}/01_Firmware, 02_Application,
+    // 03_OS, 04_Patch_OS, 99_Archive — giống hệt các hãng đã có, KHÔNG tạo thư mục trùng
+    // vì findOrCreateFolder luôn tìm-theo-tên trước khi tạo mới trong đúng thư mục cha.
+    const folderIds = await createVendorFolderStructure(name, (msg) => {
+      vendorStatusLabel.textContent = msg;
+    });
+
+    // Ghi thẳng vào cấu hình runtime để các lần upload tiếp theo trong phiên này
+    // dùng ngay Folder ID vừa tạo, không phải tìm-kiếm-theo-tên lại (tránh trùng thư mục).
+    DRIVE_CONFIG.VENDOR_ROOT_FOLDER_IDS[id] = folderIds.root;
+    DRIVE_CONFIG.VENDOR_CATEGORY_FOLDER_IDS[id] = {
+      Firmware: folderIds.Firmware,
+      Application: folderIds.Application,
+      OS: folderIds.OS,
+      Patch: folderIds.Patch,
+    };
+
+    state.vendors.push({ id, name, icon });
+
+    // Lưu vào Master-Data (kèm Folder ID) để mọi kỹ sư khác/máy khác cũng thấy hãng mới
+    // này và dùng đúng Folder ID có sẵn, không tự tạo trùng thư mục nữa.
+    vendorStatusLabel.textContent = "Đang lưu vào Master-Data...";
+    try {
+      await appendMasterDataRow({ kind: "Vendor", vendorId: id, vendorLabel: name, icon, folderIds });
+    } catch (err) {
+      console.error(err);
+      alert(
+        "Đã tạo xong thư mục trên Drive và thêm hãng trên giao diện, nhưng lưu vào Master-Data thất bại:\n" +
+        err.message
+      );
+    }
+
+    vendorOverlay.classList.remove("open");
+    e.target.reset();
+    renderVendors();
+    refreshVendorSelect();
+  } catch (err) {
+    console.error(err);
+    alert("Tạo cấu trúc thư mục trên Google Drive thất bại: " + err.message);
+  } finally {
+    submitVendorBtn.disabled = false;
+    vendorStatusLabel.textContent = "";
+  }
 });
 
 // ---- Init ----
