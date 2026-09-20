@@ -110,14 +110,17 @@ const DRIVE_CONFIG = {
 1. Tạo một Google Sheet mới trong `00_INDEX_METADATA` (hoặc dùng file `Master-Index.gsheet` đã có trong cấu trúc README).
 2. Đặt tên tab (sheet) là **Master-Index** (đúng với `MASTER_INDEX_SHEET_NAME`), hàng đầu tiên là tiêu đề cột theo đúng thứ tự:
 
-   | A | B | C | D | E | F | G | H | I | J |
-   |---|---|---|---|---|---|---|---|---|---|
-   | Vendor | Category | Product/Model | Version | Upload Date | Uploaded By | Checksum (SHA-256) | Change Log URL | Status | Drive Link |
+   | A | B | C | D | E | F | G | H | I | J | K |
+   |---|---|---|---|---|---|---|---|---|---|---|
+   | Vendor | Category | Product/Model | Version | Upload Date | Uploaded By | Checksum (SHA-256) | Change Log URL | Status | Drive Link | Kích thước (bytes) |
 
 3. Mở Sheet trên trình duyệt, copy **Sheet ID** từ URL:
    `https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit` ← phần `<SHEET_ID>`.
 4. Điền `SHEET_ID` vào `MASTER_INDEX_SHEET_ID` trong `DRIVE_CONFIG`.
 5. Đảm bảo tài khoản kỹ sư đăng nhập Drive đều có quyền **Editor** trên Sheet này (chia sẻ qua Google Group nội bộ như mô tả ở README mục phân quyền).
+6. Sau khi đăng nhập thành công, trang sẽ tự đọc toàn bộ dòng trong Master-Index để hiển thị danh sách file thật
+   (thay cho dữ liệu mẫu minh hoạ), và tính "Tổng số file"/"Tổng dung lượng" trên dashboard dựa trên cột J/K.
+   Lưu ý: các dòng được ghi **trước khi** thêm cột K sẽ không có dữ liệu dung lượng (mặc định tính là 0 byte).
 6. Vì Sheet này không do app tạo ra, cần bổ sung scope `spreadsheets` ở Bước 5 (đã có sẵn trong mẫu cấu hình) — nếu chỉ dùng `drive.file` sẽ không ghi được vào Sheet có sẵn.
 
 > Sau mỗi lần upload thành công, app sẽ tự động gọi Sheets API (`values:append`) để thêm 1 dòng mới vào cuối sheet, kèm checksum SHA-256 tính ngay trên trình duyệt (bỏ qua nếu file > 200MB để tránh treo UI — có thể chỉnh `CHECKSUM_MAX_BYTES`).

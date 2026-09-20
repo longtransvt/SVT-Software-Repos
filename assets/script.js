@@ -592,7 +592,7 @@ async function computeChecksum(file) {
 
 // Ghi 1 dòng mới vào Google Sheet "Master-Index" qua Sheets API v4.
 // Thứ tự cột: Vendor | Category | Product/Model | Version | Release/Upload Date
-// | Uploaded By | Checksum SHA-256 | Change Log URL | Status | Drive Link
+// | Uploaded By | Checksum SHA-256 | Change Log URL | Status | Drive Link | Kích thước (bytes)
 async function appendToMasterIndex(record) {
   if (!isMasterIndexConfigured()) return { skipped: true };
 
@@ -607,9 +607,10 @@ async function appendToMasterIndex(record) {
     record.changelog || "",
     record.status,
     record.driveLink || "",
+    record.sizeBytes || 0,
   ];
 
-  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A:J`;
+  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A:K`;
   const url =
     `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}` +
     `/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
@@ -635,7 +636,7 @@ async function appendToMasterIndex(record) {
 async function loadFilesFromMasterIndex() {
   if (!isMasterIndexConfigured()) return;
 
-  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A2:J20000`;
+  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A2:K20000`;
   const resp = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}/values/${encodeURIComponent(range)}`,
     { headers: driveHeaders() }
@@ -647,7 +648,7 @@ async function loadFilesFromMasterIndex() {
   const records = rows
     .filter((row) => row && row.length && row[0])
     .map((row) => {
-      const [vendorLabel, category, product, version, date, user, checksum, changelog, status, driveLink] = row;
+      const [vendorLabel, category, product, version, date, user, checksum, changelog, status, driveLink, sizeBytesRaw] = row;
       // Khớp lại Vendor ID nội bộ (dùng để lọc theo sidebar) từ tên Hãng đã ghi trong Sheet.
       const matched = state.vendors.find(
         (v) => v.name.toLowerCase() === (vendorLabel || "").toLowerCase()
@@ -665,7 +666,9 @@ async function loadFilesFromMasterIndex() {
         status: status || "Active",
         driveLink: driveLink || null,
         checksum: checksum || "",
-        sizeBytes: 0, // Master-Index hiện chưa lưu dung lượng file
+        // Chỉ những file upload SAU khi tính năng này được thêm mới có cột K (Kích thước);
+        // các dòng cũ hơn (upload trước đó) không có dữ liệu này -> mặc định 0.
+        sizeBytes: Number(sizeBytesRaw) || 0,
       };
     });
 
