@@ -127,7 +127,7 @@ const DRIVE_CONFIG = {
   // lưu danh sách Hãng Công Nghệ + Sản phẩm/Model đã từng được thêm, để dùng chung
   // cho mọi kỹ sư (không bị mất khi tải lại trang / đổi máy).
   MASTER_DATA_SHEET_NAME: "Master-Data",
-  // Folder 00_INDEX_METADATA — nơi nút "Khởi tạo Master-Index" sẽ tạo Sheet mới nếu chưa có
+  // Folder 00_INDEX_METADATA — nơi chứa file Google Sheet "Master-Index" duy nhất của hệ thống
   INDEX_METADATA_FOLDER_ID: "1u60ljRoUaNLxuMr9R82CiuvaYpfpjv9a",
   // Ngưỡng dung lượng (byte) để tính checksum SHA-256 phía trình duyệt;
   // file lớn hơn sẽ ghi "N/A (file quá lớn)" để tránh treo trình duyệt.
@@ -226,8 +226,9 @@ function isMasterIndexConfigured() {
   return !!getEffectiveSheetId();
 }
 
-// Sheet ID có thể lấy từ DRIVE_CONFIG (đã hard-code) hoặc từ localStorage
-// (do nút "Khởi tạo Master-Index" tự tạo và lưu lại) — ưu tiên DRIVE_CONFIG.
+// Sheet ID có thể lấy từ DRIVE_CONFIG (đã hard-code, dùng chung DUY NHẤT 1 Master-Index
+// cho toàn hệ thống) hoặc từ localStorage (giữ lại để tương thích ngược, không còn nút
+// nào ghi vào đây nữa) — ưu tiên DRIVE_CONFIG.
 function getEffectiveSheetId() {
   if (DRIVE_CONFIG.MASTER_INDEX_SHEET_ID && !DRIVE_CONFIG.MASTER_INDEX_SHEET_ID.startsWith("YOUR_")) {
     return DRIVE_CONFIG.MASTER_INDEX_SHEET_ID;
@@ -529,89 +530,9 @@ async function appendToMasterIndex(record) {
   return { skipped: false };
 }
 
-// Tạo mới Google Sheet "Master-Index" trong folder 00_INDEX_METADATA (chỉ chạy 1 lần,
-// dùng chính access token của người bấm nút — không cần chia sẻ quyền cho ai khác).
-async function createMasterIndexSheet() {
-  if (!state.accessToken) {
-    alert("Vui lòng bấm '🔐 Đăng nhập bằng Google' trước.");
-    return;
-  }
-  if (isMasterIndexConfigured()) {
-    const ok = confirm(
-      `Đã có Master-Index Sheet ID: ${getEffectiveSheetId()}.\nBạn có chắc muốn tạo Sheet MỚI (sẽ không dùng sheet cũ nữa)?`
-    );
-    if (!ok) return;
-  }
-
-  try {
-    // 1) Tạo file Google Sheet trong đúng folder 00_INDEX_METADATA
-    const createResp = await fetch(`https://www.googleapis.com/drive/v3/files?supportsAllDrives=true`, {
-      method: "POST",
-      headers: driveHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({
-        name: "Master-Index",
-        mimeType: "application/vnd.google-apps.spreadsheet",
-        parents: [DRIVE_CONFIG.INDEX_METADATA_FOLDER_ID],
-      }),
-    });
-    if (!createResp.ok) throw new Error(`Tạo Sheet thất bại (HTTP ${createResp.status})`);
-    const file = await createResp.json();
-    const sheetId = file.id;
-
-    // 2) Đổi tên tab mặc định "Sheet1" -> "Master-Index"
-    const metaResp = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties`
-    , { headers: driveHeaders() });
-    const meta = await metaResp.json();
-    const firstSheetId = meta.sheets[0].properties.sheetId;
-
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`, {
-      method: "POST",
-      headers: driveHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({
-        requests: [
-          {
-            updateSheetProperties: {
-              properties: { sheetId: firstSheetId, title: DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME },
-              fields: "title",
-            },
-          },
-        ],
-      }),
-    });
-
-    // 3) Ghi hàng tiêu đề cột
-    const headerRange = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A1:J1`;
-    await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(headerRange)}?valueInputOption=USER_ENTERED`,
-      {
-        method: "PUT",
-        headers: driveHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          values: [[
-            "Vendor", "Category", "Product/Model", "Version", "Upload Date",
-            "Uploaded By", "Checksum (SHA-256)", "Change Log URL", "Status", "Drive Link",
-          ]],
-        }),
-      }
-    );
-
-    localStorage.setItem("masterIndexSheetId", sheetId);
-    alert(
-      "✅ Đã tạo Google Sheet 'Master-Index' thành công trong 00_INDEX_METADATA!\n\n" +
-      `Sheet ID: ${sheetId}\n\n` +
-      "Sheet ID này đã được lưu để dùng ngay trên trình duyệt này.\n" +
-      "Để TẤT CẢ kỹ sư khác cùng dùng chung 1 Sheet, hãy gửi Sheet ID trên cho quản trị " +
-      "để điền cố định vào MASTER_INDEX_SHEET_ID trong assets/script.js."
-    );
-    window.open(file.webViewLink || `https://docs.google.com/spreadsheets/d/${sheetId}/edit`, "_blank");
-  } catch (err) {
-    console.error(err);
-    alert("Tạo Master-Index Sheet thất bại: " + err.message);
-  }
-}
-
-document.getElementById("initSheetBtn").addEventListener("click", createMasterIndexSheet);
+// Master-Index Sheet ID đã được cấu hình cố định (MASTER_INDEX_SHEET_ID ở trên) —
+// hệ thống chỉ dùng DUY NHẤT 1 Master-Index chung cho toàn bộ kỹ sư, nên không
+// còn nút/luồng tự tạo Sheet mới trên UI nữa.
 
 // ========================================================================
 // MASTER-DATA (danh mục Hãng Công Nghệ + Sản phẩm/Model) — dùng chung 1 file
@@ -829,7 +750,7 @@ function renderFiles() {
 function downloadFile(file) {
   alert(
     `"${file.product} — ${file.version}" là dữ liệu mẫu minh hoạ, chưa có trên Drive thật.\n` +
-    `Các file được tải lên qua nút "Tải lên phiên bản mới" sau khi kết nối Drive sẽ có link "Mở trên Drive" thật.`
+    `Các file được tải lên qua nút "Upload Software" sau khi kết nối Drive sẽ có link "Mở trên Drive" thật.`
   );
 }
 

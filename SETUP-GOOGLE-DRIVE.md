@@ -144,7 +144,7 @@ const DRIVE_CONFIG = {
 
 ## Bắt buộc đăng nhập trước khi Tải lên / Thêm hãng
 Khi hệ thống đã cấu hình Drive thật (`CLIENT_ID` + `FW_REPO_ROOT_ID`), app **yêu cầu đăng nhập Google trước** khi cho phép:
-- Mở modal "Tải lên phiên bản mới" và thực hiện submit.
+- Mở modal "Upload Software" và thực hiện submit.
 - Mở modal "+ Thêm hãng" và tạo hãng mới (vì cần quyền ghi để tạo thư mục thật + ghi Master-Data).
 
 Việc đăng nhập dùng Google Identity Services (OAuth2), giới hạn theo domain công ty (`ALLOWED_DOMAIN`).
@@ -157,7 +157,7 @@ sẽ trả lỗi 403 và app sẽ hiển thị thông báo lỗi tương ứng �
 ## Bước 6 — Host & chạy thử
 - Host portal qua HTTP(S) đúng domain đã khai báo ở Bước 3 (OAuth không hoạt động khi mở trực tiếp file `file://`).
 - Mở portal → bấm **"🔐 Đăng nhập bằng Google"** → đăng nhập bằng tài khoản Google Workspace công ty → **Allow**.
-- Sau khi đăng nhập, mở **"Tải lên phiên bản mới"**: chọn hãng, loại, điền metadata, chọn file → bấm **Tải lên**.
+- Sau khi đăng nhập, mở **"Upload Software"**: chọn hãng, loại, điền metadata, chọn file → bấm **Tải lên**.
   - Ứng dụng sẽ tự tìm hoặc tạo thư mục con theo tên hãng bên trong thư mục loại tương ứng, rồi upload file vào đó bằng resumable upload (có thanh tiến trình %).
   - Sau khi upload xong, dòng file mới trong bảng sẽ có link **"Mở trên Drive"** trỏ thẳng tới file thật.
 

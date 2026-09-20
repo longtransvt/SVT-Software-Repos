@@ -79,7 +79,7 @@ Portal tĩnh (HTML/CSS/JS) đóng vai trò lớp UI thân thiện phía trên Go
 - Sidebar chọn hãng (Vendor).
 - Tab chọn loại: Firmware / Application / OS / Patch OS.
 - Bảng danh sách file: tên, version, ngày, người upload, trạng thái, nút Tải xuống.
-- Nút "Tải lên phiên bản mới" mở modal nhập metadata + chọn file → gọi Google Drive API (Google Identity Services + Drive API v3, scope `drive.file`) để upload thực tế lên đúng folder.
+- Nút "Upload Software" mở modal nhập metadata + chọn file → gọi Google Drive API (Google Identity Services + Drive API v3, scope `drive.file`) để upload thực tế lên đúng folder.
 - Thanh tìm kiếm/lọc theo hãng, loại, từ khoá, khoảng ngày.
 - Khu vực này chỉ là **front-end demo**: các hàm gọi Google Drive API được đánh dấu `TODO` để đội kỹ thuật cắm OAuth Client ID + Folder ID thật vào khi triển khai.
 
