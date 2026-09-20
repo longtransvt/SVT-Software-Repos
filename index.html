@@ -16,40 +16,67 @@
 <!-- LANDING / LOGIN OVERLAY -->
 <div id="landingOverlay" class="landing-overlay">
   <div class="landing-card">
-    <div class="landing-hero">
-      <img src="assets/img/svtech-logo.png" alt="SVTECH" class="landing-logo">
-      <h1>Software Repository Portal</h1>
-      <p class="landing-tagline">Kho lưu trữ Firmware · Application · OS · Patch OS tập trung cho toàn bộ hạ tầng</p>
 
-      <ul class="landing-features">
-        <li><span>🔒</span> Bảo mật theo tài khoản Google Workspace nội bộ</li>
-        <li><span>📦</span> Cấu trúc lưu trữ chuẩn hoá theo từng hãng công nghệ</li>
-        <li><span>🕒</span> Lịch sử phiên bản đầy đủ, có nhật ký (audit trail)</li>
-        <li><span>⚡</span> Tải lên / tải xuống nhanh chóng, trực tiếp trên Google Drive</li>
-      </ul>
+    <div class="landing-brand-panel">
+      <div class="landing-brand-top">
+        <img src="assets/img/svtech-logo.png" alt="SVTECH" class="landing-logo">
+      </div>
 
-      <div class="landing-vendors">
-        <span>🟥 Hitachi</span><span>🟢 HPE</span><span>🔵 Dell</span><span>🌐 Cisco</span>
-        <span>🔷 NetApp</span><span>🔴 Oracle</span><span>🪟 Microsoft</span><span>🎩 RedHat</span>
-        <span>⚙️ VMware</span><span>🗂️ +Khác</span>
+      <div class="landing-hero">
+        <span class="landing-eyebrow">Software &amp; Firmware Repository</span>
+        <h1>The Foundation of <span>Success</span>, Secured in One Place</h1>
+        <p class="landing-tagline">Centralized storage for Firmware · Application · OS · Patch OS, synced directly with Google Shared Drive.</p>
+
+        <ul class="landing-features">
+          <li><span>🔒</span> Secured with internal Google Workspace accounts</li>
+          <li><span>📦</span> Standardized storage structure per technology vendor</li>
+          <li><span>🕒</span> Full version history with audit trail</li>
+          <li><span>⚡</span> Fast upload / download, directly on Google Drive</li>
+        </ul>
+
+        <div class="landing-vendors">
+          <span>🟥 Hitachi</span><span>🟢 HPE</span><span>🔵 Dell</span><span>🌐 Cisco</span>
+          <span>🔷 NetApp</span><span>🔴 Oracle</span><span>🪟 Microsoft</span><span>🎩 RedHat</span>
+          <span>⚙️ VMware</span><span>🗂️ +More</span>
+        </div>
+      </div>
+
+      <div class="landing-stats">
+        <div><strong>10+</strong><span>Vendors</span></div>
+        <div><strong>1</strong><span>Master-Index</span></div>
+        <div><strong>24/7</strong><span>Drive Sync</span></div>
       </div>
     </div>
 
-    <div class="landing-powered-by">
-      <img src="assets/img/google-drive-logo.png" alt="Google Drive" class="powered-by-logo">
-      <span>Tích hợp trực tiếp với Google Drive — lưu trữ &amp; đồng bộ an toàn</span>
+    <div class="landing-login-panel">
+      <span class="landing-tag">SVTECH Internal Portal</span>
+      <h2 class="landing-login-title">Welcome Back</h2>
+      <p class="landing-login-sub">Sign in to upload or download Firmware, OS, Application and Patch OS packages.</p>
+
+      <button class="btn-google" id="landingLoginBtn" type="button">
+        <svg viewBox="0 0 48 48" width="20" height="20"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.5 15.3 18.9 12 24 12c3.1 0 5.9 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3 16.3 3 9.6 7.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6C29.6 36 27 37 24 37c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.5 40.5 16.2 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.4l6.6 5.6C41.5 36.1 45 30.6 45 24c0-1.4-.1-2.7-.4-3.5z"/></svg>
+        Sign in with Google
+      </button>
+      <button class="btn btn-outline btn-lg" id="landingDemoBtn">👀 Preview the app</button>
+
+      <div class="landing-divider">RESTRICTED ACCESS</div>
+
+      <div class="landing-domain-note">
+        <div class="ic">🔒</div>
+        <p>Only Google accounts with access to <strong>SVTECH Shared Drives</strong> (@svtech.com.vn) can upload/download.</p>
+      </div>
+
+      <div class="landing-powered-by">
+        <img src="assets/img/google-drive-logo.png" alt="Google Drive" class="powered-by-logo">
+        <span>Powered by Google Drive integration</span>
+      </div>
+
+      <div class="landing-footer">
+        <img src="assets/img/svtech-logo.png" alt="SVTECH" class="footer-logo">
+        <span>SVTECH — The Foundation of Success</span>
+      </div>
     </div>
 
-    <div class="landing-actions">
-      <button class="btn btn-primary btn-lg" id="landingLoginBtn">🔐 Đăng nhập bằng Google</button>
-      <button class="btn btn-outline btn-lg" id="landingDemoBtn">👀 Xem thử giao diện</button>
-      <p class="landing-hint">Chỉ tài khoản email công ty (@svtech.com.vn) có quyền truy cập Shared Drive mới upload/download được.</p>
-    </div>
-
-    <div class="landing-footer">
-      <img src="assets/img/svtech-logo.png" alt="SVTECH" class="footer-logo">
-      <span>SVTECH — The Foundation of Success</span>
-    </div>
   </div>
 </div>
 
