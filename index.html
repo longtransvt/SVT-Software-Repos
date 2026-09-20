@@ -168,18 +168,30 @@
 
     <div class="advanced-filters" id="advancedFilters" style="display:none;">
       <div class="form-row">
-        <label>Ngày upload từ</label>
-        <input type="date" id="dateFromFilter">
+        <label>Hãng</label>
+        <select id="advVendorFilter">
+          <option value="all">Tất cả hãng</option>
+        </select>
       </div>
       <div class="form-row">
-        <label>Đến ngày</label>
-        <input type="date" id="dateToFilter">
+        <label>Sản phẩm/Model</label>
+        <select id="advProductFilter">
+          <option value="all">Tất cả sản phẩm</option>
+        </select>
       </div>
       <div class="form-row">
         <label>Người upload</label>
         <select id="uploaderFilter">
           <option value="all">Tất cả người upload</option>
         </select>
+      </div>
+      <div class="form-row">
+        <label>Ngày upload từ</label>
+        <input type="date" id="dateFromFilter">
+      </div>
+      <div class="form-row">
+        <label>Đến ngày</label>
+        <input type="date" id="dateToFilter">
       </div>
       <button type="button" class="btn btn-outline btn-small" id="resetAdvancedFiltersBtn">✕ Xoá bộ lọc nâng cao</button>
     </div>

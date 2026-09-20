@@ -179,6 +179,8 @@ const state = {
   dateFrom: "",        // bộ lọc nâng cao: ngày upload từ (yyyy-mm-dd)
   dateTo: "",          // bộ lọc nâng cao: ngày upload đến (yyyy-mm-dd)
   uploaderFilter: "all", // bộ lọc nâng cao: người upload
+  advVendorFilter: "all",  // bộ lọc nâng cao: Hãng (độc lập với sidebar, áp dụng cả khi đang search toàn cục)
+  advProductFilter: "all", // bộ lọc nâng cao: Sản phẩm/Model
   accessToken: null,   // token OAuth hiện tại (chỉ giữ trong bộ nhớ, không lưu localStorage)
   tokenClient: null,   // Google Identity Services token client
   folderCache: {},     // cache "category::vendorName" -> folderId (tránh gọi API lặp lại)
@@ -199,6 +201,8 @@ const sortFilterEl = document.getElementById("sortFilter");
 const categoryTabsEl = document.getElementById("categoryTabs");
 const toggleAdvancedFiltersBtn = document.getElementById("toggleAdvancedFiltersBtn");
 const advancedFiltersEl = document.getElementById("advancedFilters");
+const advVendorFilterEl = document.getElementById("advVendorFilter");
+const advProductFilterEl = document.getElementById("advProductFilter");
 const dateFromFilterEl = document.getElementById("dateFromFilter");
 const dateToFilterEl = document.getElementById("dateToFilter");
 const uploaderFilterEl = document.getElementById("uploaderFilter");
@@ -945,7 +949,11 @@ function getFilteredFiles() {
     );
   }
 
-  // Bộ lọc nâng cao: ngày upload (từ/đến), người upload
+  // Bộ lọc nâng cao: Hãng, Sản phẩm/Model, ngày upload (từ/đến), người upload
+  // (áp dụng độc lập với bộ lọc Hãng/Loại ở sidebar/tab — dùng để thu hẹp thêm kết quả,
+  // kể cả khi đang ở chế độ search toàn cục.)
+  if (state.advVendorFilter !== "all") list = list.filter((f) => f.vendor === state.advVendorFilter);
+  if (state.advProductFilter !== "all") list = list.filter((f) => f.product === state.advProductFilter);
   if (state.dateFrom) list = list.filter((f) => f.date >= state.dateFrom);
   if (state.dateTo) list = list.filter((f) => f.date <= state.dateTo);
   if (state.uploaderFilter !== "all") list = list.filter((f) => f.user === state.uploaderFilter);
@@ -956,6 +964,39 @@ function getFilteredFiles() {
     default: list.sort((a, b) => b.date.localeCompare(a.date));
   }
   return list;
+}
+
+// Cập nhật danh sách "Hãng" trong bộ lọc nâng cao (chỉ liệt kê hãng đang có file).
+function refreshAdvVendorFilter() {
+  const current = advVendorFilterEl.value || "all";
+  const vendorIds = [...new Set(state.files.map((f) => f.vendor))];
+  const options = state.vendors.filter((v) => vendorIds.includes(v.id));
+  advVendorFilterEl.innerHTML = '<option value="all">Tất cả hãng</option>';
+  options.forEach((v) => {
+    const opt = document.createElement("option");
+    opt.value = v.id;
+    opt.textContent = `${v.icon} ${v.name}`;
+    advVendorFilterEl.appendChild(opt);
+  });
+  advVendorFilterEl.value = options.some((v) => v.id === current) ? current : "all";
+}
+
+// Cập nhật danh sách "Sản phẩm/Model" trong bộ lọc nâng cao — chỉ liệt kê sản phẩm thuộc
+// Hãng đang chọn ở bộ lọc Hãng nâng cao (nếu có), giúp danh sách gọn và đúng ngữ cảnh.
+function refreshAdvProductFilter() {
+  const current = advProductFilterEl.value || "all";
+  const scoped = state.advVendorFilter === "all"
+    ? state.files
+    : state.files.filter((f) => f.vendor === state.advVendorFilter);
+  const products = [...new Set(scoped.map((f) => f.product).filter(Boolean))].sort();
+  advProductFilterEl.innerHTML = '<option value="all">Tất cả sản phẩm</option>';
+  products.forEach((p) => {
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    advProductFilterEl.appendChild(opt);
+  });
+  advProductFilterEl.value = products.includes(current) ? current : "all";
 }
 
 // Cập nhật danh sách "Người upload" trong bộ lọc nâng cao theo dữ liệu file hiện có,
@@ -982,6 +1023,8 @@ function hasRealChecksum(checksum) {
 function renderFiles() {
   computeLatestTags();
   refreshUploaderFilter();
+  refreshAdvVendorFilter();
+  refreshAdvProductFilter();
   const files = getFilteredFiles();
   fileTableBody.innerHTML = "";
 
@@ -1080,6 +1123,12 @@ categoryTabsEl.addEventListener("click", (e) => {
 searchInput.addEventListener("input", (e) => { state.searchTerm = e.target.value; renderFiles(); });
 statusFilterEl.addEventListener("change", (e) => { state.statusFilter = e.target.value; renderFiles(); });
 sortFilterEl.addEventListener("change", (e) => { state.sortBy = e.target.value; renderFiles(); });
+advVendorFilterEl.addEventListener("change", (e) => {
+  state.advVendorFilter = e.target.value;
+  state.advProductFilter = "all"; // đổi hãng thì reset lựa chọn sản phẩm cho khỏi lệch ngữ cảnh
+  renderFiles();
+});
+advProductFilterEl.addEventListener("change", (e) => { state.advProductFilter = e.target.value; renderFiles(); });
 dateFromFilterEl.addEventListener("change", (e) => { state.dateFrom = e.target.value; renderFiles(); });
 dateToFilterEl.addEventListener("change", (e) => { state.dateTo = e.target.value; renderFiles(); });
 uploaderFilterEl.addEventListener("change", (e) => { state.uploaderFilter = e.target.value; renderFiles(); });
@@ -1091,9 +1140,13 @@ toggleAdvancedFiltersBtn.addEventListener("click", () => {
 });
 
 resetAdvancedFiltersBtn.addEventListener("click", () => {
+  state.advVendorFilter = "all";
+  state.advProductFilter = "all";
   state.dateFrom = "";
   state.dateTo = "";
   state.uploaderFilter = "all";
+  advVendorFilterEl.value = "all";
+  advProductFilterEl.value = "all";
   dateFromFilterEl.value = "";
   dateToFilterEl.value = "";
   uploaderFilterEl.value = "all";
