@@ -15,7 +15,7 @@
 // ============================ CẤU HÌNH ==================================
 // Điền các giá trị này theo hướng dẫn trong SETUP-GOOGLE-DRIVE.md
 const DRIVE_CONFIG = {
-  CLIENT_ID: "YOUR_CLIENT_ID.apps.googleusercontent.com", // Bước 3
+  CLIENT_ID: "11402124429-ieasmd98scuah6hd8tv3gqb15u1quf6c.apps.googleusercontent.com",
   // spreadsheets scope cần thiết để ghi log vào Master-Index (Sheet có sẵn,
   // không do app tạo ra nên drive.file không đủ quyền ghi).
   SCOPES: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets",
