@@ -209,11 +209,35 @@ const statTotalFilesEl = document.getElementById("statTotalFiles");
 const statTotalStorageEl = document.getElementById("statTotalStorage");
 const statVendorCountEl = document.getElementById("statVendorCount");
 const statNewFilesEl = document.getElementById("statNewFiles");
+const landingOverlay = document.getElementById("landingOverlay");
+const landingLoginBtn = document.getElementById("landingLoginBtn");
+const landingDemoBtn = document.getElementById("landingDemoBtn");
 
 function vendorName(id) {
   const v = state.vendors.find((v) => v.id === id);
   return v ? `${v.icon} ${v.name}` : id;
 }
+
+// ========================================================================
+// LANDING / LOGIN OVERLAY
+// ========================================================================
+
+const LANDING_DISMISS_KEY = "svtech_landing_dismissed";
+
+function dismissLanding() {
+  landingOverlay.classList.add("hidden");
+  sessionStorage.setItem(LANDING_DISMISS_KEY, "1");
+}
+
+if (sessionStorage.getItem(LANDING_DISMISS_KEY) === "1") {
+  landingOverlay.classList.add("hidden");
+}
+
+landingDemoBtn.addEventListener("click", dismissLanding);
+landingLoginBtn.addEventListener("click", () => {
+  // Tái sử dụng đúng luồng đăng nhập/kiểm tra cấu hình Drive đã có ở nút topbar.
+  connectDriveBtn.click();
+});
 
 // ========================================================================
 // TOAST NOTIFICATIONS (thay cho alert() thô — tự ẩn, có icon theo loại)
@@ -402,6 +426,7 @@ function updateConnectionUI(connected) {
     connectDriveBtn.classList.add("btn-connected");
     uploadHintEl.textContent = "✅ Đã đăng nhập Google. File sẽ được upload thẳng vào thư mục hãng/loại tương ứng.";
     uploadHintEl.classList.add("connected");
+    dismissLanding();
 
     userLabelEl.textContent = state.currentUser.name;
     userLabelEl.title = state.currentUser.email;
