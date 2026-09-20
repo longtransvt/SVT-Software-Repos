@@ -348,6 +348,8 @@ body {
 
 .form-row { display: flex; flex-direction: column; gap: 6px; }
 .form-row label { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+.form-row label .field-hint { font-weight: 500; text-transform: none; color: var(--text-muted); opacity: 0.85; }
+.field-hint { font-size: 11px; color: var(--text-muted); }
 .form-row input, .form-row select {
   padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--border);
   font-size: 13px; background: var(--surface); color: var(--text); font-family: inherit;
@@ -384,6 +386,9 @@ body {
   background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
   padding: 4px 12px; display: inline-block;
 }
+.drop-zone-file-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 8px; }
+.drop-zone-file-list .drop-zone-file { margin-top: 0; }
+.drop-zone-summary { margin-top: 6px; font-size: 11px; color: var(--text-muted); }
 
 .progress-wrap { display: flex; align-items: center; gap: 10px; }
 .progress-bar { flex: 1; height: 9px; border-radius: 5px; background: var(--bg); overflow: hidden; }

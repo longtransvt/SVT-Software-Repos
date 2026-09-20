@@ -1041,6 +1041,9 @@ sortFilterEl.addEventListener("change", (e) => { state.sortBy = e.target.value; 
 
 const uploadOverlay = document.getElementById("uploadModalOverlay");
 const fVendor = document.getElementById("fVendor");
+const fProductInput = document.getElementById("fProduct");
+const fProductListEl = document.getElementById("fProductList");
+const fProductHintEl = document.getElementById("fProductHint");
 const dropZone = document.getElementById("dropZone");
 const dropZoneText = document.getElementById("dropZoneText");
 const fFileInput = document.getElementById("fFile");
@@ -1049,15 +1052,46 @@ function refreshVendorSelect() {
   fVendor.innerHTML = state.vendors.map((v) => `<option value="${v.id}">${v.icon} ${v.name}</option>`).join("");
 }
 
+// Gợi ý Sản phẩm/Model đã có (đọc từ danh mục dùng chung productCatalog, đồng bộ qua
+// tab Master-Data) cho đúng hãng đang chọn, để kỹ sư chọn nhanh thay vì gõ lại từ đầu.
+function refreshProductList() {
+  const products = state.productCatalog[fVendor.value]
+    ? Array.from(state.productCatalog[fVendor.value]).sort((a, b) => a.localeCompare(b))
+    : [];
+  fProductListEl.innerHTML = products.map((p) => `<option value="${p}"></option>`).join("");
+}
+
+// Báo cho kỹ sư biết Model đang gõ là ĐÃ CÓ (dùng lại thư mục cũ) hay MỚI HOÀN TOÀN
+// (hệ thống sẽ tự tạo 1 thư mục con mới tương ứng trên Drive khi upload).
+function updateProductHint() {
+  const product = fProductInput.value.trim();
+  if (!product) { fProductHintEl.textContent = ""; return; }
+  const exists = state.productCatalog[fVendor.value]?.has(product);
+  fProductHintEl.textContent = exists
+    ? "✅ Model đã có — dùng lại thư mục hiện tại."
+    : "🆕 Model mới — hệ thống sẽ tự tạo thư mục tương ứng trên Drive.";
+  fProductHintEl.style.color = exists ? "var(--success)" : "var(--svt-orange-500, #f5821f)";
+}
+fVendor.addEventListener("change", () => { refreshProductList(); updateProductHint(); });
+fProductInput.addEventListener("input", updateProductHint);
+
+// Cho phép chọn/kéo-thả NHIỀU file cùng lúc (VD: firmware.bin + release-notes.pdf,
+// hoặc nhiều bản vá cùng đợt) — mỗi file được upload + ghi log Master-Index riêng,
+// dùng chung Hãng/Loại/Model/Version/Change log đã nhập trong form.
 function updateDropZonePreview() {
-  const file = fFileInput.files[0];
-  if (!file) {
+  const files = Array.from(fFileInput.files || []);
+  if (!files.length) {
     dropZoneText.innerHTML = 'Kéo-thả file vào đây, hoặc <span class="drop-zone-link">chọn file</span>';
     return;
   }
+  const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+  const fileChips = files
+    .map((f) => `<span class="drop-zone-file">📄 ${f.name} · ${formatBytes(f.size)}</span>`)
+    .join("");
   dropZoneText.innerHTML =
     'Kéo-thả file vào đây, hoặc <span class="drop-zone-link">chọn file khác</span>' +
-    `<div class="drop-zone-file">📄 ${file.name} · ${formatBytes(file.size)}</div>`;
+    `<div class="drop-zone-file-list">${fileChips}</div>` +
+    `<div class="drop-zone-summary">${files.length} file đã chọn · Tổng ${formatBytes(totalSize)}</div>`;
 }
 
 dropZone.addEventListener("click", () => fFileInput.click());
@@ -1075,8 +1109,7 @@ fFileInput.addEventListener("change", updateDropZonePreview);
 dropZone.addEventListener("drop", (e) => {
   e.preventDefault();
   dropZone.classList.remove("drag-over");
-  const file = e.dataTransfer.files[0];
-  if (!file) return;
+  if (!e.dataTransfer.files.length) return;
   fFileInput.files = e.dataTransfer.files;
   updateDropZonePreview();
 });
@@ -1091,6 +1124,8 @@ document.getElementById("openUploadBtn").addEventListener("click", () => {
     return;
   }
   refreshVendorSelect();
+  refreshProductList();
+  updateProductHint();
   updateDropZonePreview();
   progressWrap.style.display = "none";
   progressFill.style.width = "0%";
@@ -1108,8 +1143,10 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
   const product = document.getElementById("fProduct").value.trim();
   const version = document.getElementById("fVersion").value.trim();
   const changelog = document.getElementById("fChangelog").value.trim();
-  const fileObj = fFileInput.files[0];
-  if (!product || !version || !fileObj) return;
+  // Upload nhiều file cùng lúc (VD: firmware.bin + release-notes.pdf, hoặc nhiều
+  // gói vá cùng đợt) — tất cả dùng chung Hãng/Loại/Model/Version/Change log đã nhập.
+  const files = Array.from(fFileInput.files || []);
+  if (!product || !version || !files.length) return;
 
   // --- Versioning: KHÔNG ghi đè, chỉ cảnh báo nếu đúng phiên bản này đã có sẵn cho
   // cùng Hãng/Loại/Sản phẩm — mọi bản upload đều được giữ lại (lưu lịch sử) trên
@@ -1120,26 +1157,29 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
   if (duplicateVersion) {
     const proceed = window.confirm(
       `Phiên bản "${version}" của "${product}" đã tồn tại trong danh mục (upload ngày ${duplicateVersion.date} bởi ${duplicateVersion.user}).\n\n` +
-      `Tiếp tục sẽ tải lên thêm 1 bản mới (không ghi đè bản cũ, cả 2 vẫn được giữ lại để tra cứu lịch sử).\n\n` +
+      `Tiếp tục sẽ tải lên thêm ${files.length > 1 ? `${files.length} file mới` : "1 bản mới"} (không ghi đè bản cũ, tất cả vẫn được giữ lại để tra cứu lịch sử).\n\n` +
       `Bạn có muốn tiếp tục không?`
     );
     if (!proceed) return;
   }
 
-  const baseRecord = {
+  const isNewProduct = !state.productCatalog[vendorId]?.has(product);
+  const uploadDate = new Date().toISOString().slice(0, 10);
+  const uploadUser = state.currentUser ? state.currentUser.email : "kỹ sư demo (chưa đăng nhập)";
+  const makeRecord = (fileObj) => ({
     vendor: vendorId,
     vendorLabel,
     category,
     product,
     version,
     changelog,
-    date: new Date().toISOString().slice(0, 10),
-    user: state.currentUser ? state.currentUser.email : "kỹ sư demo (chưa đăng nhập)",
+    date: uploadDate,
+    user: uploadUser,
     status: "Active",
     driveLink: null,
     checksum: "",
     sizeBytes: fileObj.size,
-  };
+  });
 
   // --- Bắt buộc đăng nhập Google (tài khoản có quyền truy cập Shared Drive)
   // khi hệ thống đã cấu hình Drive thật — không cho phép upload "chui" ẩn danh. ---
@@ -1154,9 +1194,16 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
 
   // --- Trường hợp CHƯA cấu hình Drive (môi trường demo/dev): chỉ minh hoạ trong bảng. ---
   if (!isDriveConfigured()) {
-    state.files.unshift(baseRecord);
+    files.forEach((fileObj) => state.files.unshift(makeRecord(fileObj)));
+    if (isNewProduct) {
+      if (!state.productCatalog[vendorId]) state.productCatalog[vendorId] = new Set();
+      state.productCatalog[vendorId].add(product);
+    }
     finishUploadUI();
-    toast(`Đã thêm "${product} — ${version}" (chế độ minh hoạ, chưa upload lên Drive thật).`, "info");
+    toast(
+      `Đã thêm ${files.length} file cho "${product} — ${version}" (chế độ minh hoạ, chưa upload lên Drive thật).`,
+      "info"
+    );
     return;
   }
 
@@ -1165,54 +1212,72 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
     submitUploadBtn.disabled = true;
     progressWrap.style.display = "flex";
     progressFill.style.width = "0%";
-    progressLabel.textContent = "Đang chuẩn bị thư mục...";
+    progressLabel.textContent = "Đang chuẩn bị thư mục hãng/loại...";
 
     // Ưu tiên dùng Folder ID cố định đã cấu hình sẵn cho hãng + loại này
     // (tránh gọi API tìm-kiếm-theo-tên có thể bị trễ index và tạo trùng thư mục).
-    let targetFolderId = DRIVE_CONFIG.VENDOR_CATEGORY_FOLDER_IDS[vendorId]?.[category];
+    let categoryFolderId = DRIVE_CONFIG.VENDOR_CATEGORY_FOLDER_IDS[vendorId]?.[category];
 
-    if (!targetFolderId) {
+    if (!categoryFolderId) {
       // Hãng mới hoặc loại mới chưa có ID cấu hình sẵn -> tự tìm/tạo theo tên,
       // dựa trên thư mục gốc của hãng (nếu đã biết) hoặc thư mục gốc FW-REPO.
       const vendorRootId =
         DRIVE_CONFIG.VENDOR_ROOT_FOLDER_IDS[vendorId] ||
         (await findOrCreateFolder(vendorLabel, DRIVE_CONFIG.FW_REPO_ROOT_ID));
       const categorySubfolderName = DRIVE_CONFIG.CATEGORY_SUBFOLDER_NAMES[category] || category;
-      targetFolderId = await findOrCreateFolder(categorySubfolderName, vendorRootId);
+      categoryFolderId = await findOrCreateFolder(categorySubfolderName, vendorRootId);
     }
 
-    progressLabel.textContent = "Đang tính checksum...";
-    baseRecord.checksum = await computeChecksum(fileObj);
+    // Mỗi Sản phẩm/Model có 1 thư mục con riêng bên trong {Hãng}/{Loại} — nếu Model
+    // đã có sẵn thì findOrCreateFolder tìm-theo-tên và dùng lại đúng thư mục cũ;
+    // nếu là Model MỚI (gõ tay, chưa có trong danh mục) thì tự tạo thư mục mới.
+    progressLabel.textContent = isNewProduct
+      ? `Đang tạo thư mục cho model mới "${product}"...`
+      : `Đang mở thư mục model "${product}"...`;
+    const productFolderId = await findOrCreateFolder(product, categoryFolderId);
 
-    progressLabel.textContent = "0%";
-    const result = await resumableUpload(fileObj, targetFolderId, (pct) => {
-      progressFill.style.width = pct + "%";
-      progressLabel.textContent = pct + "%";
-    });
+    const uploadedRecords = [];
+    const failedFiles = [];
+    for (let i = 0; i < files.length; i++) {
+      const fileObj = files[i];
+      const filePrefix = files.length > 1 ? `[${i + 1}/${files.length}] ${fileObj.name} — ` : "";
+      try {
+        progressLabel.textContent = `${filePrefix}Đang tính checksum...`;
+        const record = makeRecord(fileObj);
+        record.checksum = await computeChecksum(fileObj);
 
-    baseRecord.driveLink = result.webViewLink || `https://drive.google.com/file/d/${result.id}/view`;
+        progressFill.style.width = "0%";
+        const result = await resumableUpload(fileObj, productFolderId, (pct) => {
+          progressFill.style.width = pct + "%";
+          progressLabel.textContent = `${filePrefix}${pct}%`;
+        });
+        record.driveLink = result.webViewLink || `https://drive.google.com/file/d/${result.id}/view`;
 
-    progressFill.style.width = "100%";
-    progressLabel.textContent = "Đang ghi log Master-Index...";
-    try {
-      const logResult = await appendToMasterIndex(baseRecord);
-      if (logResult.skipped) {
-        console.info("Bỏ qua ghi Master-Index: chưa cấu hình MASTER_INDEX_SHEET_ID.");
+        progressLabel.textContent = `${filePrefix}Đang ghi log Master-Index...`;
+        try {
+          const logResult = await appendToMasterIndex(record);
+          if (logResult.skipped) {
+            console.info("Bỏ qua ghi Master-Index: chưa cấu hình MASTER_INDEX_SHEET_ID.");
+          }
+        } catch (logErr) {
+          console.error(logErr);
+          toast(
+            `File "${fileObj.name}" đã upload lên Drive thành công, nhưng ghi log vào Master-Index thất bại:\n` +
+            logErr.message,
+            "warning"
+          );
+        }
+
+        uploadedRecords.push(record);
+      } catch (fileErr) {
+        console.error(fileErr);
+        failedFiles.push({ name: fileObj.name, error: fileErr.message });
       }
-    } catch (logErr) {
-      console.error(logErr);
-      toast(
-        "File đã upload lên Drive thành công, nhưng ghi log vào Master-Index thất bại:\n" +
-        logErr.message +
-        "\n\nHãy kiểm tra lại MASTER_INDEX_SHEET_ID và quyền chỉnh sửa Sheet.",
-        "warning"
-      );
     }
 
     // Nếu Sản phẩm/Model này chưa từng có trong danh mục Master-Data thì ghi thêm 1 dòng
-    // để lần sau các kỹ sư khác biết hãng này đã có model gì.
-    const knownProducts = state.productCatalog[vendorId];
-    if (!knownProducts || !knownProducts.has(product)) {
+    // (chỉ 1 lần cho cả đợt upload) để lần sau các kỹ sư khác biết hãng này đã có model gì.
+    if (isNewProduct && uploadedRecords.length) {
       try {
         await appendMasterDataRow({ kind: "Product", vendorId, vendorLabel, product });
         if (!state.productCatalog[vendorId]) state.productCatalog[vendorId] = new Set();
@@ -1222,9 +1287,21 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
       }
     }
 
-    state.files.unshift(baseRecord);
+    uploadedRecords.forEach((record) => state.files.unshift(record));
+    progressFill.style.width = "100%";
     finishUploadUI();
-    toast(`Upload thành công "${product} — ${version}" lên Google Drive!`, "success");
+
+    if (uploadedRecords.length && !failedFiles.length) {
+      toast(`Upload thành công ${uploadedRecords.length} file cho "${product} — ${version}" lên Google Drive!`, "success");
+    } else if (uploadedRecords.length && failedFiles.length) {
+      toast(
+        `Đã upload ${uploadedRecords.length}/${files.length} file. Thất bại: ` +
+        failedFiles.map((f) => `${f.name} (${f.error})`).join("; "),
+        "warning"
+      );
+    } else {
+      toast("Upload thất bại cho toàn bộ file đã chọn: " + failedFiles.map((f) => f.error).join("; "), "error");
+    }
   } catch (err) {
     console.error(err);
     toast("Upload lên Google Drive thất bại: " + err.message, "error");

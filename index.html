@@ -215,7 +215,9 @@
       </div>
       <div class="form-row">
         <label>Sản phẩm / Model *</label>
-        <input type="text" id="fProduct" placeholder="VD: ProLiant DL380 Gen10" required>
+        <input type="text" id="fProduct" list="fProductList" placeholder="Chọn model có sẵn hoặc gõ tên model mới..." required autocomplete="off">
+        <datalist id="fProductList"></datalist>
+        <span class="field-hint" id="fProductHint"></span>
       </div>
       <div class="form-row">
         <label>Phiên bản (Version) *</label>
@@ -226,16 +228,16 @@
         <input type="url" id="fChangelog" placeholder="https://...">
       </div>
       <div class="form-row">
-        <label>Tệp tin *</label>
+        <label>Tệp tin * <span class="field-hint">(có thể chọn/kéo-thả nhiều file cùng lúc)</span></label>
         <div class="drop-zone" id="dropZone">
           <div class="drop-zone-icon">📁</div>
           <div class="drop-zone-text" id="dropZoneText">Kéo-thả file vào đây, hoặc <span class="drop-zone-link">chọn file</span></div>
-          <input type="file" id="fFile" required hidden>
+          <input type="file" id="fFile" multiple required hidden>
         </div>
       </div>
       <p class="hint" id="uploadHint">
         ⚠️ Chưa đăng nhập Google. Bấm "🔐 Đăng nhập bằng Google" ở góc trên trước khi tải lên
-        để file được ghi trực tiếp vào thư mục hãng/loại tương ứng trên Drive.
+        để file được ghi trực tiếp vào thư mục hãng/loại/model tương ứng trên Drive.
       </p>
       <div class="progress-wrap" id="progressWrap" style="display:none;">
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
