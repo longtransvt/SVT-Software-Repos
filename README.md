@@ -1,5 +1,12 @@
 # Kiến trúc lưu trữ Firmware / Application / OS / Patch trên Google Drive nội bộ
 
+🌐 **Truy cập trực tiếp (GitHub Pages):** https://longtransvt.github.io/SVT-Software-Repos/
+
+> ⚠️ Lưu ý: Trang được host qua GitHub Pages nên có thể truy cập public trên Internet. Chỉ tài khoản Google
+> thuộc domain công ty và có quyền truy cập Shared Drive `FW-REPO` mới đăng nhập/tải lên/tải xuống được —
+> tuy nhiên nên cân nhắc chuyển repo sang **private** + **GitHub Pages nội bộ** (hoặc host trên hạ tầng nội bộ)
+> nếu không muốn giao diện/cấu hình (Client ID, Sheet ID...) bị lộ công khai.
+
 ## 1. Mục tiêu
 - Chuẩn hoá nơi lưu trữ firmware, application, OS, patch OS của các hãng lớn.
 - Kỹ sư dễ dàng tìm, tải lên phiên bản mới, tải xuống phiên bản cần dùng.
