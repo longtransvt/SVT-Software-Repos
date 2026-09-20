@@ -1235,3 +1235,6 @@ renderFiles();
 renderStats();
 updateConnectionUI(false);
 window.addEventListener("load", initGoogleAuth);
+
+const footerYearEl = document.getElementById("footerYear");
+if (footerYearEl) footerYearEl.textContent = new Date().getFullYear();
