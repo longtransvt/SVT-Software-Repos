@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT Software Repository Portal</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon">🗄️</span>
+    <div>
+      <h1>IT Software Repository</h1>
+      <p>Firmware · Application · OS · Patch OS</p>
+    </div>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Tìm theo tên file, version, hãng...">
+  </div>
+
+  <div class="topbar-actions">
+    <button class="btn btn-outline" id="connectDriveBtn">🔗 Kết nối Google Drive</button>
+    <button class="btn btn-primary" id="openUploadBtn">⬆️ Tải lên phiên bản mới</button>
+    <div class="user-chip">
+      <span class="avatar">KS</span>
+      <span>Kỹ sư demo</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR: Vendors -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Hãng công nghệ</div>
+    <ul id="vendorList" class="vendor-list">
+      <!-- populated by script.js -->
+    </ul>
+    <button class="btn btn-ghost btn-add-vendor" id="addVendorBtn">+ Thêm hãng khác</button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <div class="breadcrumb" id="breadcrumb">Tất cả hãng</div>
+
+    <nav class="tabs" id="categoryTabs">
+      <button class="tab active" data-category="all">Tất cả</button>
+      <button class="tab" data-category="Firmware">📦 Firmware</button>
+      <button class="tab" data-category="Application">🧩 Application</button>
+      <button class="tab" data-category="OS">💽 OS</button>
+      <button class="tab" data-category="Patch">🩹 Patch OS</button>
+    </nav>
+
+    <div class="filters">
+      <select id="statusFilter">
+        <option value="all">Tất cả trạng thái</option>
+        <option value="Active">Active</option>
+        <option value="Deprecated">Deprecated</option>
+        <option value="Archived">Archived</option>
+      </select>
+      <select id="sortFilter">
+        <option value="date-desc">Ngày upload: Mới nhất</option>
+        <option value="date-asc">Ngày upload: Cũ nhất</option>
+        <option value="name-asc">Tên A-Z</option>
+      </select>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="file-table">
+        <thead>
+          <tr>
+            <th>Tên file</th>
+            <th>Hãng</th>
+            <th>Loại</th>
+            <th>Sản phẩm/Model</th>
+            <th>Version</th>
+            <th>Ngày upload</th>
+            <th>Người upload</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody id="fileTableBody">
+          <!-- populated by script.js -->
+        </tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display:none;">
+        Không tìm thấy file phù hợp.
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal-overlay" id="uploadModalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Tải lên phiên bản mới</h2>
+      <button class="modal-close" id="closeUploadModal">✕</button>
+    </div>
+    <form id="uploadForm" class="modal-body">
+      <div class="form-row">
+        <label>Hãng (Vendor) *</label>
+        <select id="fVendor" required></select>
+      </div>
+      <div class="form-row">
+        <label>Loại (Category) *</label>
+        <select id="fCategory" required>
+          <option value="Firmware">Firmware</option>
+          <option value="Application">Application</option>
+          <option value="OS">OS</option>
+          <option value="Patch">Patch OS</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Sản phẩm / Model *</label>
+        <input type="text" id="fProduct" placeholder="VD: ProLiant DL380 Gen10" required>
+      </div>
+      <div class="form-row">
+        <label>Phiên bản (Version) *</label>
+        <input type="text" id="fVersion" placeholder="VD: v2.78" required>
+      </div>
+      <div class="form-row">
+        <label>Ghi chú phát hành / Change log (URL)</label>
+        <input type="url" id="fChangelog" placeholder="https://...">
+      </div>
+      <div class="form-row">
+        <label>Tệp tin *</label>
+        <input type="file" id="fFile" required>
+      </div>
+      <p class="hint" id="uploadHint">
+        ⚠️ Chưa kết nối Google Drive. Bấm "🔗 Kết nối Google Drive" ở góc trên trước khi tải lên
+        để file được ghi trực tiếp vào thư mục hãng/loại tương ứng trên Drive.
+      </p>
+      <div class="progress-wrap" id="progressWrap" style="display:none;">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <span id="progressLabel">0%</span>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" id="cancelUploadBtn">Huỷ</button>
+        <button type="submit" class="btn btn-primary" id="submitUploadBtn">Tải lên</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ADD VENDOR MODAL -->
+<div class="modal-overlay" id="vendorModalOverlay">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2>Thêm hãng mới</h2>
+      <button class="modal-close" id="closeVendorModal">✕</button>
+    </div>
+    <form id="vendorForm" class="modal-body">
+      <div class="form-row">
+        <label>Tên hãng *</label>
+        <input type="text" id="vName" placeholder="VD: Fortinet" required>
+      </div>
+      <div class="form-row">
+        <label>Biểu tượng (emoji)</label>
+        <input type="text" id="vIcon" placeholder="🛡️" maxlength="4">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" id="cancelVendorBtn">Huỷ</button>
+        <button type="submit" class="btn btn-primary">Thêm</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="assets/script.js"></script>
+</body>
+</html>
