@@ -5,6 +5,37 @@ trên trình duyệt (không cần backend), sau đó gọi thẳng **Google Dri
 để tạo thư mục hãng (nếu chưa có) và upload file bằng **resumable upload**
 (hỗ trợ file lớn, có thanh tiến trình %).
 
+## Bước 0 — Điều kiện cần thiết về tài khoản Google (đọc trước khi bắt đầu)
+
+### 0.1. Loại tài khoản Google
+| | Google Workspace (khuyến nghị) | Gmail cá nhân miễn phí |
+|---|---|---|
+| **Shared Drive** (ổ đĩa dùng chung của phòng ban) | ✅ Có, quản lý phân quyền theo nhóm | ❌ Không có tính năng Shared Drive, chỉ có folder trong "My Drive" của 1 cá nhân |
+| **Dung lượng lưu trữ** | Theo gói (30GB–5TB+/user hoặc pooled storage) | 15GB dùng chung Gmail+Photos+Drive — dễ hết dung lượng với file firmware lớn |
+| **OAuth consent screen = Internal** | ✅ Có (chỉ nhân viên trong domain công ty mới đăng nhập được, không cần Google duyệt app) | ❌ Không có, bắt buộc dùng **External** |
+| **Phù hợp cho hệ thống nội bộ** | ✅ Rất phù hợp | ⚠️ Chỉ nên dùng thử nghiệm/demo cá nhân |
+
+> **Khuyến nghị:** dùng tài khoản **Google Workspace của công ty** (ví dụ `it@congty.com`) để có Shared Drive thật, dung lượng đủ lớn, và kiểm soát quyền truy cập theo nhóm nhân viên.
+
+### 0.2. Quyền cần có để thực hiện các bước dưới đây
+- **Người tạo GCP Project & OAuth Client ID**: cần đăng nhập bằng tài khoản Google (Workspace hoặc cá nhân đều được) có thể truy cập https://console.cloud.google.com — không cần license trả phí riêng, Google Cloud Console dùng miễn phí cho việc tạo Project/API/OAuth Client ở quy mô này.
+- **Chọn OAuth consent screen = Internal**: chỉ khả dụng nếu tài khoản đó thuộc **Google Workspace** và bạn là người có quyền quản trị OAuth trong domain (thường là Workspace Admin, hoặc được Admin cấp quyền "API Access"). Nếu bạn không thấy tuỳ chọn Internal, nghĩa là tài khoản không thuộc Workspace hoặc chưa được cấp quyền — hãy dùng **External** + thêm email kỹ sư vào **Test users**.
+- **Tạo/chỉnh sửa Shared Drive**: cần tài khoản Workspace có quyền **Manager** trên Shared Drive đó (hoặc quyền tạo Shared Drive mới do Admin bật trong **Admin Console → Apps → Google Workspace → Drive and Docs → Sharing settings**).
+- **Từng kỹ sư sử dụng portal**: cần có tài khoản Google (Workspace) được người quản trị Shared Drive thêm vào với vai trò tối thiểu **Content Manager** (được tạo/sửa/xoá file) hoặc **Contributor** (chỉ thêm file, không xoá của người khác) — xem mục phân quyền trong `README.md`.
+- **Ghi log Master-Index**: mỗi kỹ sư cần quyền **Editor** trên Google Sheet đó.
+
+### 0.3. Về việc "xác minh ứng dụng" (App verification) của Google
+- Nếu chọn **Internal** (Workspace): **không cần** Google xác minh app, dùng ngay trong nội bộ domain.
+- Nếu bắt buộc dùng **External** (vì không có Workspace):
+  - Ở chế độ **Testing**, app hoạt động ngay nhưng giới hạn tối đa **100 tài khoản test user** (đủ dùng cho phòng IT nội bộ) và người dùng sẽ thấy cảnh báo "Google chưa xác minh ứng dụng này" — vẫn bấm **Advanced → Go to (tên app) (unsafe)** để tiếp tục được, không ảnh hưởng chức năng.
+  - Nếu muốn bỏ cảnh báo và không giới hạn 100 user, phải nộp app cho Google xác minh (mất thời gian, cần chính sách bảo mật, video demo...) — thường không cần thiết cho công cụ nội bộ nhỏ.
+
+### 0.4. Yêu cầu hạ tầng khi triển khai
+- Portal phải được **host qua HTTP/HTTPS** (không mở trực tiếp bằng đường dẫn `file://`), vì Google OAuth yêu cầu Authorized JavaScript origin là 1 domain/host thật (localhost cũng được khi test).
+- Nếu host nội bộ bằng domain riêng, khuyến nghị dùng **HTTPS** (chứng chỉ nội bộ hoặc Let's Encrypt) để trình duyệt không chặn/warning.
+
+---
+
 ## Bước 1 — Tạo Google Cloud Project
 1. Vào https://console.cloud.google.com/ → chọn/tạo một **Project** mới (vd `it-software-repo`).
 2. Vào **APIs & Services → Library** → tìm **Google Drive API** → bấm **Enable**.
@@ -82,6 +113,22 @@ const DRIVE_CONFIG = {
 - Sau khi kết nối, mở **"Tải lên phiên bản mới"**: chọn hãng, loại, điền metadata, chọn file → bấm **Tải lên**.
   - Ứng dụng sẽ tự tìm hoặc tạo thư mục con theo tên hãng bên trong thư mục loại tương ứng, rồi upload file vào đó bằng resumable upload (có thanh tiến trình %).
   - Sau khi upload xong, dòng file mới trong bảng sẽ có link **"Mở trên Drive"** trỏ thẳng tới file thật.
+
+## Kiểm tra kết nối (checklist nhanh)
+1. Mở Console trình duyệt (F12) trước khi bấm "Kết nối Google Drive" để theo dõi lỗi nếu có.
+2. Bấm **Kết nối Google Drive** → nếu hiện popup chọn tài khoản Google → chọn đúng tài khoản Workspace công ty → màn hình xin quyền hiển thị đúng 2 quyền (Drive, Sheets) → **Allow**.
+3. Nút chuyển thành **"✅ Đã kết nối Google Drive"** (nền xanh) là đã lấy được access token thành công.
+4. Thử upload 1 file nhỏ (vd ảnh test), theo dõi thanh tiến trình chạy tới 100%, sau đó dòng mới xuất hiện với nút **"🔗 Mở trên Drive"** — bấm vào để xác nhận file đã nằm đúng thư mục hãng/loại trên Drive.
+5. Vào Google Sheet Master-Index kiểm tra đã có thêm 1 dòng mới tương ứng.
+
+## Sự cố thường gặp
+| Lỗi | Nguyên nhân | Cách khắc phục |
+|---|---|---|
+| `redirect_uri_mismatch` hoặc popup OAuth báo lỗi origin | Domain đang host portal chưa được thêm vào Authorized JavaScript origins | Quay lại Bước 3, thêm đúng domain (kể cả cổng, vd `:8791`) |
+| "This app isn't verified" | Đang dùng OAuth External + chưa xác minh app | Bấm Advanced → Go to (unsafe) để tiếp tục (không ảnh hưởng chức năng), hoặc chuyển sang Internal nếu có Workspace |
+| HTTP 403 khi upload / tạo folder | Tài khoản đăng nhập chưa được cấp quyền Content Manager/Editor trên Shared Drive | Nhờ quản trị Shared Drive thêm tài khoản vào đúng vai trò |
+| HTTP 404 khi ghi Master-Index | `MASTER_INDEX_SHEET_ID` sai hoặc tài khoản chưa có quyền Editor trên Sheet | Kiểm tra lại Sheet ID và quyền chia sẻ |
+| Nút "Kết nối Google Drive" báo "Chưa cấu hình Google Drive" | Chưa điền đủ `CLIENT_ID`/`CATEGORY_FOLDER_IDS` trong `assets/script.js` | Hoàn tất Bước 5 |
 
 ## Ghi chú bảo mật
 - Scope `drive.file` giới hạn quyền truy cập chỉ trong phạm vi file do app tạo/được chia sẻ — không đọc được toàn bộ Drive của người dùng.
