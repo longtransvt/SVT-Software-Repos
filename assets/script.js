@@ -229,6 +229,12 @@ function dismissLanding() {
   sessionStorage.setItem(LANDING_DISMISS_KEY, "1");
 }
 
+// Hiện lại landing/login overlay — gọi khi đăng xuất để buộc đăng nhập lại.
+function showLanding() {
+  sessionStorage.removeItem(LANDING_DISMISS_KEY);
+  landingOverlay.classList.remove("hidden");
+}
+
 if (sessionStorage.getItem(LANDING_DISMISS_KEY) === "1") {
   landingOverlay.classList.add("hidden");
 }
@@ -475,6 +481,7 @@ function signOut() {
   state.folderCache = {};
   state.masterDataTabReady = false;
   updateConnectionUI(false);
+  showLanding();
 }
 
 logoutBtnEl.addEventListener("click", (e) => {
