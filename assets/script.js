@@ -151,18 +151,18 @@ const DEFAULT_VENDORS = [
 
 // ---- Dữ liệu mẫu để minh hoạ bảng danh sách file (không có trên Drive thật) ----
 const SAMPLE_FILES = [
-  { vendor: "hpe", category: "Firmware", product: "ProLiant DL380 Gen10", version: "iLO5 v2.78", date: "2026-09-15", user: "nguyen.van.a", status: "Active", driveLink: null },
-  { vendor: "hpe", category: "Firmware", product: "ProLiant DL360 Gen9", version: "iLO4 v2.55", date: "2025-02-10", user: "tran.thi.b", status: "Deprecated", driveLink: null },
-  { vendor: "dell", category: "Firmware", product: "PowerEdge R740", version: "iDRAC 6.10.30", date: "2026-08-02", user: "le.van.c", status: "Active", driveLink: null },
-  { vendor: "cisco", category: "OS", product: "Catalyst 9300", version: "IOS-XE 17.12.3", date: "2026-07-20", user: "nguyen.van.a", status: "Active", driveLink: null },
-  { vendor: "cisco", category: "Patch", product: "Nexus 9000", version: "NX-OS 9.3.12 patch", date: "2026-06-01", user: "pham.thi.d", status: "Active", driveLink: null },
-  { vendor: "netapp", category: "Firmware", product: "AFF A400", version: "ONTAP 9.14.1P4", date: "2026-05-11", user: "le.van.c", status: "Active", driveLink: null },
-  { vendor: "hitachi", category: "Firmware", product: "VSP E1090", version: "SVOS 9.8.3", date: "2025-11-30", user: "tran.thi.b", status: "Archived", driveLink: null },
-  { vendor: "oracle", category: "Application", product: "Oracle Database", version: "19.24 RU", date: "2026-08-28", user: "nguyen.van.a", status: "Active", driveLink: null },
-  { vendor: "microsoft", category: "OS", product: "Windows Server 2022", version: "Build 20348.2966", date: "2026-09-01", user: "pham.thi.d", status: "Active", driveLink: null },
-  { vendor: "microsoft", category: "Patch", product: "Windows Server 2019", version: "KB5041160", date: "2026-04-14", user: "le.van.c", status: "Deprecated", driveLink: null },
-  { vendor: "redhat", category: "OS", product: "RHEL 9", version: "9.4 ISO", date: "2026-06-15", user: "tran.thi.b", status: "Active", driveLink: null },
-  { vendor: "redhat", category: "Patch", product: "RHEL 8", version: "RHSA-2026:5321", date: "2026-08-19", user: "nguyen.van.a", status: "Active", driveLink: null },
+  { vendor: "hpe", category: "Firmware", product: "ProLiant DL380 Gen10", version: "iLO5 v2.78", date: "2026-09-15", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 82 * 1024 * 1024 },
+  { vendor: "hpe", category: "Firmware", product: "ProLiant DL360 Gen9", version: "iLO4 v2.55", date: "2025-02-10", user: "tran.thi.b", status: "Deprecated", driveLink: null, sizeBytes: 64 * 1024 * 1024 },
+  { vendor: "dell", category: "Firmware", product: "PowerEdge R740", version: "iDRAC 6.10.30", date: "2026-08-02", user: "le.van.c", status: "Active", driveLink: null, sizeBytes: 48 * 1024 * 1024 },
+  { vendor: "cisco", category: "OS", product: "Catalyst 9300", version: "IOS-XE 17.12.3", date: "2026-07-20", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 620 * 1024 * 1024 },
+  { vendor: "cisco", category: "Patch", product: "Nexus 9000", version: "NX-OS 9.3.12 patch", date: "2026-06-01", user: "pham.thi.d", status: "Active", driveLink: null, sizeBytes: 210 * 1024 * 1024 },
+  { vendor: "netapp", category: "Firmware", product: "AFF A400", version: "ONTAP 9.14.1P4", date: "2026-05-11", user: "le.van.c", status: "Active", driveLink: null, sizeBytes: 1.2 * 1024 * 1024 * 1024 },
+  { vendor: "hitachi", category: "Firmware", product: "VSP E1090", version: "SVOS 9.8.3", date: "2025-11-30", user: "tran.thi.b", status: "Archived", driveLink: null, sizeBytes: 340 * 1024 * 1024 },
+  { vendor: "oracle", category: "Application", product: "Oracle Database", version: "19.24 RU", date: "2026-08-28", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 2.8 * 1024 * 1024 * 1024 },
+  { vendor: "microsoft", category: "OS", product: "Windows Server 2022", version: "Build 20348.2966", date: "2026-09-01", user: "pham.thi.d", status: "Active", driveLink: null, sizeBytes: 5.4 * 1024 * 1024 * 1024 },
+  { vendor: "microsoft", category: "Patch", product: "Windows Server 2019", version: "KB5041160", date: "2026-04-14", user: "le.van.c", status: "Deprecated", driveLink: null, sizeBytes: 780 * 1024 * 1024 },
+  { vendor: "redhat", category: "OS", product: "RHEL 9", version: "9.4 ISO", date: "2026-06-15", user: "tran.thi.b", status: "Active", driveLink: null, sizeBytes: 9.1 * 1024 * 1024 * 1024 },
+  { vendor: "redhat", category: "Patch", product: "RHEL 8", version: "RHSA-2026:5321", date: "2026-08-19", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 95 * 1024 * 1024 },
 ];
 
 const CATEGORY_ICON = { Firmware: "📦", Application: "🧩", OS: "💽", Patch: "🩹" };
@@ -203,10 +203,93 @@ const submitUploadBtn = document.getElementById("submitUploadBtn");
 const userAvatarEl = document.getElementById("userAvatar");
 const userLabelEl = document.getElementById("userLabel");
 const logoutBtnEl = document.getElementById("logoutBtn");
+const themeToggleBtn = document.getElementById("themeToggleBtn");
+const toastContainerEl = document.getElementById("toastContainer");
+const statTotalFilesEl = document.getElementById("statTotalFiles");
+const statTotalStorageEl = document.getElementById("statTotalStorage");
+const statVendorCountEl = document.getElementById("statVendorCount");
+const statNewFilesEl = document.getElementById("statNewFiles");
 
 function vendorName(id) {
   const v = state.vendors.find((v) => v.id === id);
   return v ? `${v.icon} ${v.name}` : id;
+}
+
+// ========================================================================
+// TOAST NOTIFICATIONS (thay cho alert() thô — tự ẩn, có icon theo loại)
+// ========================================================================
+
+const TOAST_ICON = { info: "ℹ️", success: "✅", error: "❌", warning: "⚠️" };
+
+function toast(message, type = "info", duration = 5500) {
+  const el = document.createElement("div");
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `
+    <span class="toast-icon">${TOAST_ICON[type] || TOAST_ICON.info}</span>
+    <span class="toast-message"></span>
+    <button class="toast-close" aria-label="Đóng">✕</button>
+  `;
+  el.querySelector(".toast-message").textContent = message;
+
+  const remove = () => {
+    el.classList.add("toast-out");
+    setTimeout(() => el.remove(), 180);
+  };
+  el.querySelector(".toast-close").addEventListener("click", remove);
+  toastContainerEl.appendChild(el);
+  if (duration > 0) setTimeout(remove, duration);
+  return el;
+}
+
+// ========================================================================
+// DARK MODE
+// ========================================================================
+
+function applyTheme(theme) {
+  if (theme === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    themeToggleBtn.textContent = "☀️";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    themeToggleBtn.textContent = "🌙";
+  }
+}
+
+themeToggleBtn.addEventListener("click", () => {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  const next = isDark ? "light" : "dark";
+  localStorage.setItem("theme", next);
+  applyTheme(next);
+});
+
+applyTheme(localStorage.getItem("theme") === "dark" ? "dark" : "light");
+
+// ========================================================================
+// DASHBOARD STATS
+// ========================================================================
+
+function formatBytes(bytes) {
+  if (!bytes || bytes <= 0) return "0 MB";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let i = 0;
+  let val = bytes;
+  while (val >= 1024 && i < units.length - 1) {
+    val /= 1024;
+    i++;
+  }
+  return `${val.toFixed(val >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+function renderStats() {
+  const totalBytes = state.files.reduce((sum, f) => sum + (f.sizeBytes || 0), 0);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const newCount = state.files.filter((f) => f.date && new Date(f.date) >= sevenDaysAgo).length;
+
+  statTotalFilesEl.textContent = state.files.length;
+  statTotalStorageEl.textContent = formatBytes(totalBytes);
+  statVendorCountEl.textContent = state.vendors.length;
+  statNewFilesEl.textContent = newCount;
 }
 
 // ========================================================================
@@ -246,7 +329,7 @@ function initGoogleAuth() {
     scope: DRIVE_CONFIG.SCOPES,
     callback: async (resp) => {
       if (resp.error) {
-        alert("Đăng nhập Google thất bại: " + resp.error);
+        toast("Đăng nhập Google thất bại: " + resp.error, "error");
         return;
       }
       state.accessToken = resp.access_token;
@@ -254,9 +337,10 @@ function initGoogleAuth() {
         await fetchUserInfo();
       } catch (err) {
         console.error(err);
-        alert("Đăng nhập thành công nhưng không lấy được thông tin tài khoản: " + err.message);
+        toast("Đăng nhập thành công nhưng không lấy được thông tin tài khoản: " + err.message, "error");
       }
       updateConnectionUI(true);
+      if (state.currentUser) toast(`Xin chào ${state.currentUser.name}! Đăng nhập thành công.`, "success");
 
       // Đồng bộ danh mục Hãng Công Nghệ + Sản phẩm/Model dùng chung từ tab Master-Data
       try {
@@ -281,9 +365,10 @@ async function fetchUserInfo() {
 
   if (DRIVE_CONFIG.ALLOWED_DOMAIN && !info.email.toLowerCase().endsWith("@" + DRIVE_CONFIG.ALLOWED_DOMAIN.toLowerCase())) {
     signOut();
-    alert(
+    toast(
       `Tài khoản "${info.email}" không thuộc domain công ty (@${DRIVE_CONFIG.ALLOWED_DOMAIN}).\n` +
-      "Vui lòng đăng nhập lại bằng email công ty."
+      "Vui lòng đăng nhập lại bằng email công ty.",
+      "error"
     );
     throw new Error("Sai domain tài khoản");
   }
@@ -346,10 +431,11 @@ logoutBtnEl.addEventListener("click", (e) => {
 
 connectDriveBtn.addEventListener("click", () => {
   if (!isDriveConfigured()) {
-    alert(
+    toast(
       "Chưa cấu hình Google Drive.\n\n" +
       "Vui lòng điền CLIENT_ID và FW_REPO_ROOT_ID trong assets/script.js.\n" +
-      "Xem hướng dẫn chi tiết tại SETUP-GOOGLE-DRIVE.md."
+      "Xem hướng dẫn chi tiết tại SETUP-GOOGLE-DRIVE.md.",
+      "warning"
     );
     return;
   }
@@ -671,7 +757,10 @@ function renderVendors() {
   const allCount = state.files.length;
   const allLi = document.createElement("li");
   allLi.className = state.activeVendor === "all" ? "active" : "";
-  allLi.innerHTML = `<span>🗂️ Tất cả hãng</span><span class="vendor-count">${allCount}</span>`;
+  allLi.innerHTML = `
+    <span class="vendor-main"><span class="vendor-icon-badge">🗂️</span><span class="vendor-name">Tất cả hãng</span></span>
+    <span class="vendor-count">${allCount}</span>
+  `;
   allLi.onclick = () => { state.activeVendor = "all"; renderVendors(); renderFiles(); };
   vendorListEl.appendChild(allLi);
 
@@ -679,7 +768,10 @@ function renderVendors() {
     const count = state.files.filter((f) => f.vendor === v.id).length;
     const li = document.createElement("li");
     li.className = state.activeVendor === v.id ? "active" : "";
-    li.innerHTML = `<span>${v.icon} ${v.name}</span><span class="vendor-count">${count}</span>`;
+    li.innerHTML = `
+      <span class="vendor-main"><span class="vendor-icon-badge">${v.icon}</span><span class="vendor-name">${v.name}</span></span>
+      <span class="vendor-count">${count}</span>
+    `;
     li.onclick = () => { state.activeVendor = v.id; renderVendors(); renderFiles(); };
     vendorListEl.appendChild(li);
   });
@@ -722,19 +814,23 @@ function renderFiles() {
   files.forEach((f, idx) => {
     const tr = document.createElement("tr");
     const fileLabel = `${f.product} — ${f.version}`.replace(/\s+/g, " ");
+    const catClass = f.category || "";
     const actionBtn = f.driveLink
       ? `<button class="link-btn" data-action="open" data-idx="${idx}">🔗 Mở trên Drive</button>`
       : `<button class="btn btn-outline btn-small" data-action="download" data-idx="${idx}">⬇️ Tải xuống</button>`;
     tr.innerHTML = `
-      <td class="file-name">${CATEGORY_ICON[f.category] || "📄"} ${fileLabel}</td>
-      <td>${vendorName(f.vendor)}</td>
-      <td>${f.category}</td>
-      <td>${f.product}</td>
-      <td>${f.version}</td>
-      <td>${f.date}</td>
-      <td>${f.user}</td>
-      <td><span class="badge badge-${f.status}">${f.status}</span></td>
-      <td class="row-actions">${actionBtn}</td>
+      <td class="file-name" data-label="Tên file">
+        <span class="file-icon-badge cat-${catClass}">${CATEGORY_ICON[f.category] || "📄"}</span>
+        <span>${fileLabel}</span>
+      </td>
+      <td data-label="Hãng">${vendorName(f.vendor)}</td>
+      <td data-label="Loại">${f.category}</td>
+      <td data-label="Sản phẩm/Model">${f.product}</td>
+      <td data-label="Version">${f.version}</td>
+      <td data-label="Ngày upload">${f.date}</td>
+      <td data-label="Người upload">${f.user}</td>
+      <td data-label="Trạng thái"><span class="badge badge-${f.status}">${f.status}</span></td>
+      <td class="row-actions" data-label="Thao tác">${actionBtn}</td>
     `;
     fileTableBody.appendChild(tr);
   });
@@ -748,9 +844,10 @@ function renderFiles() {
 }
 
 function downloadFile(file) {
-  alert(
+  toast(
     `"${file.product} — ${file.version}" là dữ liệu mẫu minh hoạ, chưa có trên Drive thật.\n` +
-    `Các file được tải lên qua nút "Upload Software" sau khi kết nối Drive sẽ có link "Mở trên Drive" thật.`
+    `Các file được tải lên qua nút "Upload Software" sau khi kết nối Drive sẽ có link "Mở trên Drive" thật.`,
+    "info"
   );
 }
 
@@ -777,20 +874,57 @@ sortFilterEl.addEventListener("change", (e) => { state.sortBy = e.target.value; 
 
 const uploadOverlay = document.getElementById("uploadModalOverlay");
 const fVendor = document.getElementById("fVendor");
+const dropZone = document.getElementById("dropZone");
+const dropZoneText = document.getElementById("dropZoneText");
+const fFileInput = document.getElementById("fFile");
 
 function refreshVendorSelect() {
   fVendor.innerHTML = state.vendors.map((v) => `<option value="${v.id}">${v.icon} ${v.name}</option>`).join("");
 }
 
+function updateDropZonePreview() {
+  const file = fFileInput.files[0];
+  if (!file) {
+    dropZoneText.innerHTML = 'Kéo-thả file vào đây, hoặc <span class="drop-zone-link">chọn file</span>';
+    return;
+  }
+  dropZoneText.innerHTML =
+    'Kéo-thả file vào đây, hoặc <span class="drop-zone-link">chọn file khác</span>' +
+    `<div class="drop-zone-file">📄 ${file.name} · ${formatBytes(file.size)}</div>`;
+}
+
+dropZone.addEventListener("click", () => fFileInput.click());
+fFileInput.addEventListener("change", updateDropZonePreview);
+
+["dragover", "dragenter"].forEach((evt) => {
+  dropZone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    dropZone.classList.add("drag-over");
+  });
+});
+["dragleave", "dragend"].forEach((evt) => {
+  dropZone.addEventListener(evt, () => dropZone.classList.remove("drag-over"));
+});
+dropZone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropZone.classList.remove("drag-over");
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  fFileInput.files = e.dataTransfer.files;
+  updateDropZonePreview();
+});
+
 document.getElementById("openUploadBtn").addEventListener("click", () => {
   if (isDriveConfigured() && !state.accessToken) {
-    alert(
+    toast(
       "Bạn cần đăng nhập bằng tài khoản Google có quyền truy cập Shared Drive trước khi tải lên.\n" +
-      "Bấm '🔐 Đăng nhập bằng Google' ở góc trên, sau đó thử lại."
+      "Bấm '🔐 Đăng nhập bằng Google' ở góc trên, sau đó thử lại.",
+      "warning"
     );
     return;
   }
   refreshVendorSelect();
+  updateDropZonePreview();
   progressWrap.style.display = "none";
   progressFill.style.width = "0%";
   uploadOverlay.classList.add("open");
@@ -807,8 +941,7 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
   const product = document.getElementById("fProduct").value.trim();
   const version = document.getElementById("fVersion").value.trim();
   const changelog = document.getElementById("fChangelog").value.trim();
-  const fileInput = document.getElementById("fFile");
-  const fileObj = fileInput.files[0];
+  const fileObj = fFileInput.files[0];
   if (!product || !version || !fileObj) return;
 
   const baseRecord = {
@@ -823,14 +956,16 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
     status: "Active",
     driveLink: null,
     checksum: "",
+    sizeBytes: fileObj.size,
   };
 
   // --- Bắt buộc đăng nhập Google (tài khoản có quyền truy cập Shared Drive)
   // khi hệ thống đã cấu hình Drive thật — không cho phép upload "chui" ẩn danh. ---
   if (isDriveConfigured() && !state.accessToken) {
-    alert(
+    toast(
       "Bạn cần đăng nhập bằng tài khoản Google có quyền truy cập Shared Drive trước khi tải lên.\n" +
-      "Bấm '🔐 Đăng nhập bằng Google' ở góc trên, sau đó thử lại."
+      "Bấm '🔐 Đăng nhập bằng Google' ở góc trên, sau đó thử lại.",
+      "warning"
     );
     return;
   }
@@ -839,6 +974,7 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
   if (!isDriveConfigured()) {
     state.files.unshift(baseRecord);
     finishUploadUI();
+    toast(`Đã thêm "${product} — ${version}" (chế độ minh hoạ, chưa upload lên Drive thật).`, "info");
     return;
   }
 
@@ -883,10 +1019,11 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
       }
     } catch (logErr) {
       console.error(logErr);
-      alert(
+      toast(
         "File đã upload lên Drive thành công, nhưng ghi log vào Master-Index thất bại:\n" +
         logErr.message +
-        "\n\nHãy kiểm tra lại MASTER_INDEX_SHEET_ID và quyền chỉnh sửa Sheet."
+        "\n\nHãy kiểm tra lại MASTER_INDEX_SHEET_ID và quyền chỉnh sửa Sheet.",
+        "warning"
       );
     }
 
@@ -905,9 +1042,10 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
 
     state.files.unshift(baseRecord);
     finishUploadUI();
+    toast(`Upload thành công "${product} — ${version}" lên Google Drive!`, "success");
   } catch (err) {
     console.error(err);
-    alert("Upload lên Google Drive thất bại: " + err.message);
+    toast("Upload lên Google Drive thất bại: " + err.message, "error");
   } finally {
     submitUploadBtn.disabled = false;
   }
@@ -923,6 +1061,7 @@ function finishUploadUI() {
   categoryTabsEl.querySelector('[data-category="all"]').classList.add("active");
   renderVendors();
   renderFiles();
+  renderStats();
 }
 
 // ========================================================================
@@ -935,10 +1074,11 @@ const submitVendorBtn = document.getElementById("submitVendorBtn");
 
 document.getElementById("addVendorBtn").addEventListener("click", () => {
   if (isDriveConfigured() && !state.accessToken) {
-    alert(
+    toast(
       "Bạn cần đăng nhập bằng tài khoản Google có quyền truy cập Shared Drive trước khi thêm hãng mới\n" +
       "(hệ thống sẽ tự tạo cấu trúc thư mục thật trên Drive cho hãng đó).\n" +
-      "Bấm '🔐 Đăng nhập bằng Google' ở góc trên, sau đó thử lại."
+      "Bấm '🔐 Đăng nhập bằng Google' ở góc trên, sau đó thử lại.",
+      "warning"
     );
     return;
   }
@@ -956,7 +1096,7 @@ document.getElementById("vendorForm").addEventListener("submit", async (e) => {
 
   const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   if (state.vendors.some((v) => v.id === id)) {
-    alert(`Hãng "${name}" đã có trong danh mục.`);
+    toast(`Hãng "${name}" đã có trong danh mục.`, "warning");
     return;
   }
 
@@ -967,12 +1107,14 @@ document.getElementById("vendorForm").addEventListener("submit", async (e) => {
     e.target.reset();
     renderVendors();
     refreshVendorSelect();
+    renderStats();
+    toast(`Đã thêm hãng "${name}" (chế độ minh hoạ, chưa tạo thư mục Drive thật).`, "info");
     return;
   }
 
   // --- Bắt buộc đăng nhập bằng tài khoản có quyền truy cập Shared Drive để tạo thư mục thật. ---
   if (!state.accessToken) {
-    alert("Vui lòng đăng nhập bằng tài khoản Google có quyền truy cập Shared Drive trước khi thêm hãng mới.");
+    toast("Vui lòng đăng nhập bằng tài khoản Google có quyền truy cập Shared Drive trước khi thêm hãng mới.", "warning");
     return;
   }
 
@@ -1004,9 +1146,10 @@ document.getElementById("vendorForm").addEventListener("submit", async (e) => {
       await appendMasterDataRow({ kind: "Vendor", vendorId: id, vendorLabel: name, icon, folderIds });
     } catch (err) {
       console.error(err);
-      alert(
+      toast(
         "Đã tạo xong thư mục trên Drive và thêm hãng trên giao diện, nhưng lưu vào Master-Data thất bại:\n" +
-        err.message
+        err.message,
+        "warning"
       );
     }
 
@@ -1014,9 +1157,11 @@ document.getElementById("vendorForm").addEventListener("submit", async (e) => {
     e.target.reset();
     renderVendors();
     refreshVendorSelect();
+    renderStats();
+    toast(`Đã tạo hãng "${name}" cùng đầy đủ cấu trúc thư mục trên Google Drive!`, "success");
   } catch (err) {
     console.error(err);
-    alert("Tạo cấu trúc thư mục trên Google Drive thất bại: " + err.message);
+    toast("Tạo cấu trúc thư mục trên Google Drive thất bại: " + err.message, "error");
   } finally {
     submitVendorBtn.disabled = false;
     vendorStatusLabel.textContent = "";
@@ -1026,5 +1171,6 @@ document.getElementById("vendorForm").addEventListener("submit", async (e) => {
 // ---- Init ----
 renderVendors();
 renderFiles();
+renderStats();
 updateConnectionUI(false);
 window.addEventListener("load", initGoogleAuth);

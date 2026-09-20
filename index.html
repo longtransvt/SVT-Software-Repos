@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IT Software Repository Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -19,10 +22,12 @@
   </div>
 
   <div class="search-box">
+    <span class="search-icon">🔎</span>
     <input type="text" id="searchInput" placeholder="Tìm theo tên file, version, hãng...">
   </div>
 
   <div class="topbar-actions">
+    <button class="theme-toggle" id="themeToggleBtn" title="Chuyển giao diện sáng/tối">🌙</button>
     <button class="btn btn-outline" id="connectDriveBtn">🔐 Đăng nhập bằng Google</button>
     <button class="btn btn-primary" id="openUploadBtn">⬆️ Upload Software</button>
     <div class="user-chip" id="userChip">
@@ -46,6 +51,38 @@
 
   <!-- MAIN CONTENT -->
   <main class="main">
+
+    <!-- DASHBOARD STATS -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card stat-card--files">
+        <div class="stat-icon">📄</div>
+        <div>
+          <div class="stat-value" id="statTotalFiles">0</div>
+          <div class="stat-label">Tổng số file</div>
+        </div>
+      </div>
+      <div class="stat-card stat-card--storage">
+        <div class="stat-icon">💾</div>
+        <div>
+          <div class="stat-value" id="statTotalStorage">0 MB</div>
+          <div class="stat-label">Dung lượng đã dùng</div>
+        </div>
+      </div>
+      <div class="stat-card stat-card--vendors">
+        <div class="stat-icon">🏢</div>
+        <div>
+          <div class="stat-value" id="statVendorCount">0</div>
+          <div class="stat-label">Hãng công nghệ</div>
+        </div>
+      </div>
+      <div class="stat-card stat-card--new">
+        <div class="stat-icon">🆕</div>
+        <div>
+          <div class="stat-value" id="statNewFiles">0</div>
+          <div class="stat-label">File mới (7 ngày)</div>
+        </div>
+      </div>
+    </div>
 
     <div class="breadcrumb" id="breadcrumb">Tất cả hãng</div>
 
@@ -92,6 +129,7 @@
         </tbody>
       </table>
       <div id="emptyState" class="empty-state" style="display:none;">
+        <div class="empty-state-icon">🗂️</div>
         Không tìm thấy file phù hợp.
       </div>
     </div>
@@ -102,7 +140,7 @@
 <div class="modal-overlay" id="uploadModalOverlay">
   <div class="modal">
     <div class="modal-header">
-      <h2>Upload Software</h2>
+      <h2>⬆️ Upload Software</h2>
       <button class="modal-close" id="closeUploadModal">✕</button>
     </div>
     <form id="uploadForm" class="modal-body">
@@ -133,7 +171,11 @@
       </div>
       <div class="form-row">
         <label>Tệp tin *</label>
-        <input type="file" id="fFile" required>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon">📁</div>
+          <div class="drop-zone-text" id="dropZoneText">Kéo-thả file vào đây, hoặc <span class="drop-zone-link">chọn file</span></div>
+          <input type="file" id="fFile" required hidden>
+        </div>
       </div>
       <p class="hint" id="uploadHint">
         ⚠️ Chưa đăng nhập Google. Bấm "🔐 Đăng nhập bằng Google" ở góc trên trước khi tải lên
@@ -155,7 +197,7 @@
 <div class="modal-overlay" id="vendorModalOverlay">
   <div class="modal modal-sm">
     <div class="modal-header">
-      <h2>Thêm hãng mới</h2>
+      <h2>🏷️ Thêm hãng mới</h2>
       <button class="modal-close" id="closeVendorModal">✕</button>
     </div>
     <form id="vendorForm" class="modal-body">
@@ -167,7 +209,7 @@
         <label>Biểu tượng (emoji)</label>
         <input type="text" id="vIcon" placeholder="🛡️" maxlength="4">
       </div>
-      <p id="vendorStatusLabel" style="font-size:13px;color:#6b7280;margin:4px 0 0;"></p>
+      <p id="vendorStatusLabel" class="vendor-status-label"></p>
       <div class="form-actions">
         <button type="button" class="btn btn-outline" id="cancelVendorBtn">Huỷ</button>
         <button type="submit" class="btn btn-primary" id="submitVendorBtn">Thêm</button>
@@ -175,6 +217,9 @@
     </form>
   </div>
 </div>
+
+<!-- TOAST NOTIFICATIONS -->
+<div id="toastContainer" class="toast-container"></div>
 
 <script src="assets/script.js"></script>
 </body>
