@@ -37,6 +37,10 @@ const DRIVE_CONFIG = {
   // Master-Index Google Sheet: xem SETUP-GOOGLE-DRIVE.md mục "Ghi log Master-Index"
   MASTER_INDEX_SHEET_ID: "1gg_9rUin7h9APg5_i0sVLF6YFa7ztbEYWvDzWeHqwr4",
   MASTER_INDEX_SHEET_NAME: "Master-Index",
+  // Tab "danh mục gốc" (master data) nằm trong CÙNG file Sheet Master-Index ở trên,
+  // lưu danh sách Hãng Công Nghệ + Sản phẩm/Model đã từng được thêm, để dùng chung
+  // cho mọi kỹ sư (không bị mất khi tải lại trang / đổi máy).
+  MASTER_DATA_SHEET_NAME: "Master-Data",
   // Folder 00_INDEX_METADATA — nơi nút "Khởi tạo Master-Index" sẽ tạo Sheet mới nếu chưa có
   INDEX_METADATA_FOLDER_ID: "1u60ljRoUaNLxuMr9R82CiuvaYpfpjv9a",
   // Ngưỡng dung lượng (byte) để tính checksum SHA-256 phía trình duyệt;
@@ -88,6 +92,8 @@ const state = {
   tokenClient: null,   // Google Identity Services token client
   folderCache: {},     // cache "category::vendorName" -> folderId (tránh gọi API lặp lại)
   currentUser: null,   // { email, name, picture } của người đang đăng nhập
+  productCatalog: {},  // { vendorId: Set(["Product/Model đã có"]) } — đọc từ tab Master-Data
+  masterDataTabReady: false, // đã kiểm tra/tạo tab "Master-Data" trong phiên này chưa
 };
 
 // ---- DOM refs ----
@@ -161,6 +167,15 @@ function initGoogleAuth() {
         alert("Đăng nhập thành công nhưng không lấy được thông tin tài khoản: " + err.message);
       }
       updateConnectionUI(true);
+
+      // Đồng bộ danh mục Hãng Công Nghệ + Sản phẩm/Model dùng chung từ tab Master-Data
+      try {
+        await loadMasterData();
+        renderVendors();
+        refreshVendorSelect();
+      } catch (err) {
+        console.error("Đồng bộ Master-Data thất bại:", err);
+      }
     },
   });
 }
@@ -230,6 +245,7 @@ function signOut() {
   state.accessToken = null;
   state.currentUser = null;
   state.folderCache = {};
+  state.masterDataTabReady = false;
   updateConnectionUI(false);
 }
 
@@ -487,6 +503,107 @@ async function createMasterIndexSheet() {
 document.getElementById("initSheetBtn").addEventListener("click", createMasterIndexSheet);
 
 // ========================================================================
+// MASTER-DATA (danh mục Hãng Công Nghệ + Sản phẩm/Model) — dùng chung 1 file
+// Sheet với Master-Index, tab riêng tên "Master-Data".
+// ========================================================================
+
+// Đảm bảo tab "Master-Data" đã tồn tại trong Sheet Master-Index; nếu chưa có
+// thì tự tạo + ghi hàng tiêu đề. Chỉ cần chạy 1 lần cho mỗi phiên đăng nhập.
+async function ensureMasterDataTab() {
+  if (state.masterDataTabReady || !isMasterIndexConfigured()) return;
+  const sheetId = getEffectiveSheetId();
+
+  const metaResp = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties`,
+    { headers: driveHeaders() }
+  );
+  if (!metaResp.ok) throw new Error(`Không đọc được cấu trúc Sheet (HTTP ${metaResp.status})`);
+  const meta = await metaResp.json();
+  const exists = meta.sheets.some((s) => s.properties.title === DRIVE_CONFIG.MASTER_DATA_SHEET_NAME);
+
+  if (!exists) {
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`, {
+      method: "POST",
+      headers: driveHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        requests: [{ addSheet: { properties: { title: DRIVE_CONFIG.MASTER_DATA_SHEET_NAME } } }],
+      }),
+    });
+
+    const headerRange = `${DRIVE_CONFIG.MASTER_DATA_SHEET_NAME}!A1:G1`;
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(headerRange)}?valueInputOption=USER_ENTERED`,
+      {
+        method: "PUT",
+        headers: driveHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({
+          values: [[
+            "Loại (Vendor/Product)", "Vendor ID", "Hãng Công Nghệ", "Icon",
+            "Sản phẩm/Model", "Thêm bởi", "Ngày thêm",
+          ]],
+        }),
+      }
+    );
+  }
+  state.masterDataTabReady = true;
+}
+
+// Đọc toàn bộ tab "Master-Data", gộp Hãng vào state.vendors (bỏ trùng theo id)
+// và dựng catalog Sản phẩm/Model theo từng hãng để tránh ghi trùng sau này.
+async function loadMasterData() {
+  if (!isMasterIndexConfigured()) return;
+  try {
+    await ensureMasterDataTab();
+    const range = `${DRIVE_CONFIG.MASTER_DATA_SHEET_NAME}!A2:G5000`;
+    const resp = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}/values/${encodeURIComponent(range)}`,
+      { headers: driveHeaders() }
+    );
+    if (!resp.ok) throw new Error(`Đọc Master-Data thất bại (HTTP ${resp.status})`);
+    const data = await resp.json();
+    const rows = data.values || [];
+
+    for (const row of rows) {
+      const [kind, vendorId, vendorLabel, icon, product] = row;
+      if (!vendorId) continue;
+
+      if (kind === "Vendor" && !state.vendors.some((v) => v.id === vendorId)) {
+        state.vendors.push({ id: vendorId, name: vendorLabel || vendorId, icon: icon || "🏷️" });
+      }
+      if (kind === "Product" && product) {
+        if (!state.productCatalog[vendorId]) state.productCatalog[vendorId] = new Set();
+        state.productCatalog[vendorId].add(product);
+      }
+    }
+  } catch (err) {
+    console.error("Không tải được Master-Data:", err);
+  }
+}
+
+// Ghi 1 dòng mới (Hãng mới hoặc Sản phẩm/Model mới) vào tab "Master-Data".
+async function appendMasterDataRow({ kind, vendorId, vendorLabel, icon = "", product = "" }) {
+  if (!isMasterIndexConfigured() || !state.accessToken) return;
+  await ensureMasterDataTab();
+
+  const row = [
+    kind, vendorId, vendorLabel, icon, product,
+    state.currentUser ? state.currentUser.email : "",
+    new Date().toISOString().slice(0, 10),
+  ];
+  const range = `${DRIVE_CONFIG.MASTER_DATA_SHEET_NAME}!A:G`;
+  const url =
+    `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}` +
+    `/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: driveHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ values: [row] }),
+  });
+  if (!resp.ok) throw new Error(`Ghi Master-Data thất bại (HTTP ${resp.status})`);
+}
+
+// ========================================================================
 // RENDER SIDEBAR / TABLE
 // ========================================================================
 
@@ -687,6 +804,19 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
       );
     }
 
+    // Nếu Sản phẩm/Model này chưa từng có trong danh mục Master-Data thì ghi thêm 1 dòng
+    // để lần sau các kỹ sư khác biết hãng này đã có model gì.
+    const knownProducts = state.productCatalog[vendorId];
+    if (!knownProducts || !knownProducts.has(product)) {
+      try {
+        await appendMasterDataRow({ kind: "Product", vendorId, vendorLabel, product });
+        if (!state.productCatalog[vendorId]) state.productCatalog[vendorId] = new Set();
+        state.productCatalog[vendorId].add(product);
+      } catch (err) {
+        console.error("Ghi Sản phẩm/Model vào Master-Data thất bại:", err);
+      }
+    }
+
     state.files.unshift(baseRecord);
     finishUploadUI();
   } catch (err) {
@@ -718,20 +848,35 @@ document.getElementById("addVendorBtn").addEventListener("click", () => vendorOv
 document.getElementById("closeVendorModal").addEventListener("click", () => vendorOverlay.classList.remove("open"));
 document.getElementById("cancelVendorBtn").addEventListener("click", () => vendorOverlay.classList.remove("open"));
 
-document.getElementById("vendorForm").addEventListener("submit", (e) => {
+document.getElementById("vendorForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = document.getElementById("vName").value.trim();
   const icon = document.getElementById("vIcon").value.trim() || "🏷️";
   if (!name) return;
 
   const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  if (state.vendors.some((v) => v.id === id)) {
+    alert(`Hãng "${name}" đã có trong danh mục.`);
+    return;
+  }
   // Thư mục con thật trên Drive sẽ được tự tạo (findOrCreateFolder) ngay lần
   // đầu tiên có ai đó upload file cho hãng này, không cần tạo trước ở đây.
   state.vendors.push({ id, name, icon });
 
+  // Lưu vào Master-Data để mọi kỹ sư khác cùng thấy hãng mới này (chỉ khi đã đăng nhập).
+  if (state.accessToken && isMasterIndexConfigured()) {
+    try {
+      await appendMasterDataRow({ kind: "Vendor", vendorId: id, vendorLabel: name, icon });
+    } catch (err) {
+      console.error(err);
+      alert("Đã thêm hãng trên giao diện, nhưng lưu vào Master-Data thất bại: " + err.message);
+    }
+  }
+
   vendorOverlay.classList.remove("open");
   e.target.reset();
   renderVendors();
+  refreshVendorSelect();
 });
 
 // ---- Init ----

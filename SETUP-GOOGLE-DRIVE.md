@@ -107,6 +107,19 @@ const DRIVE_CONFIG = {
 
 > Sau mỗi lần upload thành công, app sẽ tự động gọi Sheets API (`values:append`) để thêm 1 dòng mới vào cuối sheet, kèm checksum SHA-256 tính ngay trên trình duyệt (bỏ qua nếu file > 200MB để tránh treo UI — có thể chỉnh `CHECKSUM_MAX_BYTES`).
 
+## Master-Data — danh mục Hãng Công Nghệ & Sản phẩm/Model dùng chung
+- App tự tạo thêm 1 **tab riêng tên "Master-Data"** trong CHÍNH file Sheet Master-Index ở trên (không cần tạo tay) — tự động chạy lần đầu sau khi ai đó đăng nhập thành công.
+- Cấu trúc cột:
+
+  | A | B | C | D | E | F | G |
+  |---|---|---|---|---|---|---|
+  | Loại (Vendor/Product) | Vendor ID | Hãng Công Nghệ | Icon | Sản phẩm/Model | Thêm bởi | Ngày thêm |
+
+- Khi kỹ sư bấm **"+ Thêm hãng"** và tạo hãng mới → tự động ghi 1 dòng `Vendor` vào tab này.
+- Khi upload file với **Sản phẩm/Model** chưa từng xuất hiện trước đó (theo đúng hãng) → tự động ghi thêm 1 dòng `Product` để lưu lại model mới.
+- Ngay sau khi đăng nhập, app đọc lại toàn bộ tab **Master-Data** và gộp các hãng đã lưu vào danh sách sidebar/dropdown — nhờ vậy **mọi kỹ sư dùng chung 1 danh mục**, không bị mất khi tải lại trang hay đổi máy khác.
+- Nếu chưa đăng nhập (chế độ demo), hãng mới thêm chỉ tồn tại tạm trong phiên trình duyệt hiện tại và sẽ mất khi tải lại trang — đăng nhập để lưu thật.
+
 
 ## Bước 6 — Host & chạy thử
 - Host portal qua HTTP(S) đúng domain đã khai báo ở Bước 3 (OAuth không hoạt động khi mở trực tiếp file `file://`).
