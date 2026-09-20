@@ -346,7 +346,7 @@ function getEffectiveSheetId() {
 function initGoogleAuth() {
   if (typeof google === "undefined" || !google.accounts) {
     console.warn("Google Identity Services chưa tải xong, thử lại sau...");
-    return;
+    return false;
   }
   state.tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: DRIVE_CONFIG.CLIENT_ID,
@@ -387,7 +387,24 @@ function initGoogleAuth() {
       }
     },
   });
+  return true;
 }
+
+// Google Identity Services (accounts.google.com/gsi/client) được nạp bằng
+// <script async defer>, nên có thể CHƯA sẵn sàng ngay khi trang vừa load.
+// Chủ động thử khởi tạo lại vài lần để tokenClient có sẵn TRƯỚC khi người
+// dùng bấm nút — tránh tình trạng bấm "Sign in with Google" nhưng không có
+// gì xảy ra (không popup, không báo lỗi).
+function tryInitGoogleAuth(retriesLeft = 20) {
+  if (state.tokenClient) return;
+  if (initGoogleAuth()) return;
+  if (retriesLeft <= 0) {
+    console.error("Google Identity Services không tải được sau nhiều lần thử.");
+    return;
+  }
+  setTimeout(() => tryInitGoogleAuth(retriesLeft - 1), 300);
+}
+tryInitGoogleAuth();
 
 // Gọi Google UserInfo endpoint để lấy email/tên/ảnh của người vừa đăng nhập,
 // đồng thời kiểm tra domain công ty nếu ALLOWED_DOMAIN được cấu hình.
@@ -478,6 +495,12 @@ connectDriveBtn.addEventListener("click", () => {
   if (!state.tokenClient) initGoogleAuth();
   if (state.tokenClient) {
     state.tokenClient.requestAccessToken({ prompt: state.accessToken ? "" : "consent" });
+  } else {
+    toast(
+      "Google Identity Services chưa sẵn sàng (mạng chậm hoặc bị chặn bởi trình duyệt/ad-blocker).\n" +
+      "Vui lòng tải lại trang và thử lại sau vài giây.",
+      "error"
+    );
   }
 });
 
