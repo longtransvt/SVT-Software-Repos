@@ -19,12 +19,12 @@ const DRIVE_CONFIG = {
   // spreadsheets scope cần thiết để ghi log vào Master-Index (Sheet có sẵn,
   // không do app tạo ra nên drive.file không đủ quyền ghi).
   SCOPES: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets",
-  DRIVE_ID: "", // Điền Shared Drive ID nếu dùng Shared Drive, để trống nếu dùng thư mục My Drive thường
+  DRIVE_ID: "0AKLK-dRArCLLUk9PVA", // Shared Drive "[BẢO MẬT]_SYSTEM HCM"
   CATEGORY_FOLDER_IDS: {
-    Firmware: "FOLDER_ID_01_Firmware",
-    Application: "FOLDER_ID_02_Application",
-    OS: "FOLDER_ID_03_OS",
-    Patch: "FOLDER_ID_04_Patch_OS",
+    Firmware: "1DlMPVRh9zOgo5wWkPQGLRr8nqV4F0obp",     // FW-REPO/01_Firmware
+    Application: "1HUpl6OWw7PUJJonVbfUHK5IJVAm0aOTF",  // FW-REPO/02_Application
+    OS: "1Tu1RVAOvPOqq2gwf0bI4eOTap70t-_Dk",            // FW-REPO/03_OS
+    Patch: "1bH3p6BlIHyIrvFC3Xj3FotkorIG4dNK1",         // FW-REPO/04_Patch_OS
   },
   // Master-Index Google Sheet: xem SETUP-GOOGLE-DRIVE.md mục "Ghi log Master-Index"
   MASTER_INDEX_SHEET_ID: "YOUR_MASTER_INDEX_SHEET_ID",
