@@ -363,14 +363,30 @@ body {
 .form-row label { font-size: 12px; font-weight: 700; color: var(--text-muted); }
 .form-row label .field-hint { font-weight: 500; text-transform: none; color: var(--text-muted); opacity: 0.85; }
 .field-hint { font-size: 11px; color: var(--text-muted); }
-.form-row input, .form-row select {
+.form-row input, .form-row select, .form-row textarea {
   padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--border);
   font-size: 13px; background: var(--surface); color: var(--text); font-family: inherit;
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
-.form-row input:focus, .form-row select:focus {
+.form-row textarea { resize: vertical; min-height: 60px; }
+.form-row input:focus, .form-row select:focus, .form-row textarea:focus {
   outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft);
 }
+
+/* ---- File detail modal ---- */
+.file-detail-body { gap: 14px; }
+.detail-grid { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.detail-row { display: flex; gap: 12px; padding: 9px 12px; font-size: 13px; }
+.detail-row:nth-child(odd) { background: var(--surface-alt, rgba(0,0,0,0.03)); }
+.detail-label { flex: 0 0 160px; font-weight: 600; color: var(--text-muted); }
+.detail-value { flex: 1; word-break: break-word; color: var(--text); }
+.detail-value a { color: var(--primary); text-decoration: none; }
+.detail-value a:hover { text-decoration: underline; }
+.detail-checksum { font-family: ui-monospace, monospace; font-size: 11.5px; word-break: break-all; }
+.detail-section { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.detail-section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+.detail-section p { margin: 0; font-size: 13px; color: var(--text); white-space: pre-wrap; }
+.detail-deps { background: var(--warn-soft); border-color: #fde68a; }
 .hint {
   font-size: 12px; color: var(--text-muted); background: var(--warn-soft);
   border: 1px solid #fde68a; padding: 11px 12px; border-radius: var(--radius);

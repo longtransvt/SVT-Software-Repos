@@ -205,6 +205,7 @@
             <th>Loại</th>
             <th>Sản phẩm/Model</th>
             <th>Version</th>
+            <th>Dung lượng</th>
             <th>Ngày upload</th>
             <th>Người upload</th>
             <th>Trạng thái</th>
@@ -259,6 +260,18 @@
         <input type="url" id="fChangelog" placeholder="https://...">
       </div>
       <div class="form-row">
+        <label>Trang chủ / Source URL của hãng</label>
+        <input type="url" id="fSourceUrl" placeholder="VD: https://support.hpe.com/... (trang download gốc của hãng)">
+      </div>
+      <div class="form-row">
+        <label>Mô tả / README</label>
+        <textarea id="fDescription" rows="3" placeholder="Mô tả ngắn về gói phần mềm, mục đích sử dụng, lưu ý khi cài đặt..."></textarea>
+      </div>
+      <div class="form-row">
+        <label>Yêu cầu đi kèm (Dependencies)</label>
+        <input type="text" id="fDependencies" placeholder="VD: Cần iLO ≥ v2.50 trước khi nâng cấp; yêu cầu Java 11+">
+      </div>
+      <div class="form-row">
         <label>Tệp tin * <span class="field-hint">(có thể chọn/kéo-thả nhiều file cùng lúc)</span></label>
         <div class="drop-zone" id="dropZone">
           <div class="drop-zone-icon">📁</div>
@@ -304,6 +317,19 @@
         <button type="submit" class="btn btn-primary" id="submitVendorBtn">Thêm</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- FILE DETAIL MODAL -->
+<div class="modal-overlay" id="fileDetailOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="fileDetailTitle">📄 Chi tiết file</h2>
+      <button class="modal-close" id="closeFileDetailModal">✕</button>
+    </div>
+    <div class="modal-body file-detail-body" id="fileDetailBody">
+      <!-- populated by script.js -->
+    </div>
   </div>
 </div>
 

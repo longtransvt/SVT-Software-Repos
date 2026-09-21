@@ -110,9 +110,9 @@ const DRIVE_CONFIG = {
 1. Tạo một Google Sheet mới trong `00_INDEX_METADATA` (hoặc dùng file `Master-Index.gsheet` đã có trong cấu trúc README).
 2. Đặt tên tab (sheet) là **Master-Index** (đúng với `MASTER_INDEX_SHEET_NAME`), hàng đầu tiên là tiêu đề cột theo đúng thứ tự:
 
-   | A | B | C | D | E | F | G | H | I | J | K |
-   |---|---|---|---|---|---|---|---|---|---|---|
-   | Vendor | Category | Product/Model | Version | Upload Date | Uploaded By | Checksum (SHA-256) | Change Log URL | Status | Drive Link | Kích thước (bytes) |
+   | A | B | C | D | E | F | G | H | I | J | K | L | M | N |
+   |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+   | Vendor | Category | Product/Model | Version | Upload Date | Uploaded By | Checksum (SHA-256) | Change Log URL | Status | Drive Link | Kích thước (bytes) | Source URL | Mô tả | Dependencies |
 
 3. Mở Sheet trên trình duyệt, copy **Sheet ID** từ URL:
    `https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit` ← phần `<SHEET_ID>`.

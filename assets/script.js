@@ -151,7 +151,7 @@ const DEFAULT_VENDORS = [
 
 // ---- Dữ liệu mẫu để minh hoạ bảng danh sách file (không có trên Drive thật) ----
 const SAMPLE_FILES = [
-  { vendor: "hpe", category: "Firmware", product: "ProLiant DL380 Gen10", version: "iLO5 v2.78", date: "2026-09-15", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 82 * 1024 * 1024 },
+  { vendor: "hpe", category: "Firmware", product: "ProLiant DL380 Gen10", version: "iLO5 v2.78", date: "2026-09-15", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 82 * 1024 * 1024, sourceUrl: "https://support.hpe.com/connect/s/product?kmpmoid=1010026910", description: "Firmware iLO5 bản ổn định cho dòng ProLiant Gen10. Khuyến nghị cập nhật để vá lỗ hổng bảo mật iLO.", dependencies: "Cần iLO ≥ v2.10 trước khi nâng cấp trực tiếp lên v2.78" },
   { vendor: "hpe", category: "Firmware", product: "ProLiant DL360 Gen9", version: "iLO4 v2.55", date: "2025-02-10", user: "tran.thi.b", status: "Deprecated", driveLink: null, sizeBytes: 64 * 1024 * 1024 },
   { vendor: "dell", category: "Firmware", product: "PowerEdge R740", version: "iDRAC 6.10.30", date: "2026-08-02", user: "le.van.c", status: "Active", driveLink: null, sizeBytes: 48 * 1024 * 1024 },
   { vendor: "cisco", category: "OS", product: "Catalyst 9300", version: "IOS-XE 17.12.3", date: "2026-07-20", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 620 * 1024 * 1024 },
@@ -161,7 +161,7 @@ const SAMPLE_FILES = [
   { vendor: "oracle", category: "Application", product: "Oracle Database", version: "19.24 RU", date: "2026-08-28", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 2.8 * 1024 * 1024 * 1024 },
   { vendor: "microsoft", category: "OS", product: "Windows Server 2022", version: "Build 20348.2966", date: "2026-09-01", user: "pham.thi.d", status: "Active", driveLink: null, sizeBytes: 5.4 * 1024 * 1024 * 1024 },
   { vendor: "microsoft", category: "Patch", product: "Windows Server 2019", version: "KB5041160", date: "2026-04-14", user: "le.van.c", status: "Deprecated", driveLink: null, sizeBytes: 780 * 1024 * 1024 },
-  { vendor: "redhat", category: "OS", product: "RHEL 9", version: "9.4 ISO", date: "2026-06-15", user: "tran.thi.b", status: "Active", driveLink: null, sizeBytes: 9.1 * 1024 * 1024 * 1024 },
+  { vendor: "redhat", category: "OS", product: "RHEL 9", version: "9.4 ISO", date: "2026-06-15", user: "tran.thi.b", status: "Active", driveLink: null, sizeBytes: 9.1 * 1024 * 1024 * 1024, sourceUrl: "https://access.redhat.com/downloads/content/rhel", description: "ISO cài đặt RHEL 9.4 bản chính thức (Boot + BaseOS).", dependencies: "" },
   { vendor: "redhat", category: "Patch", product: "RHEL 8", version: "RHSA-2026:5321", date: "2026-08-19", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 95 * 1024 * 1024 },
 ];
 
@@ -660,7 +660,8 @@ async function computeChecksum(file) {
 
 // Ghi 1 dòng mới vào Google Sheet "Master-Index" qua Sheets API v4.
 // Thứ tự cột: Vendor | Category | Product/Model | Version | Release/Upload Date
-// | Uploaded By | Checksum SHA-256 | Change Log URL | Status | Drive Link | Kích thước (bytes)
+// | Uploaded By | Checksum SHA-256 | Change Log URL | Status | Drive Link
+// | Kích thước (bytes) | Source URL | Mô tả | Dependencies
 async function appendToMasterIndex(record) {
   if (!isMasterIndexConfigured()) return { skipped: true };
 
@@ -676,9 +677,12 @@ async function appendToMasterIndex(record) {
     record.status,
     record.driveLink || "",
     record.sizeBytes || 0,
+    record.sourceUrl || "",
+    record.description || "",
+    record.dependencies || "",
   ];
 
-  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A:K`;
+  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A:N`;
   const url =
     `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}` +
     `/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
@@ -704,7 +708,7 @@ async function appendToMasterIndex(record) {
 async function loadFilesFromMasterIndex() {
   if (!isMasterIndexConfigured()) return;
 
-  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A2:K20000`;
+  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A2:N20000`;
   const resp = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}/values/${encodeURIComponent(range)}`,
     { headers: driveHeaders() }
@@ -716,7 +720,7 @@ async function loadFilesFromMasterIndex() {
   const records = rows
     .filter((row) => row && row.length && row[0])
     .map((row) => {
-      const [vendorLabel, category, product, version, date, user, checksum, changelog, status, driveLink, sizeBytesRaw] = row;
+      const [vendorLabel, category, product, version, date, user, checksum, changelog, status, driveLink, sizeBytesRaw, sourceUrl, description, dependencies] = row;
       // Khớp lại Vendor ID nội bộ (dùng để lọc theo sidebar) từ tên Hãng đã ghi trong Sheet.
       const matched = state.vendors.find(
         (v) => v.name.toLowerCase() === (vendorLabel || "").toLowerCase()
@@ -737,6 +741,10 @@ async function loadFilesFromMasterIndex() {
         // Chỉ những file upload SAU khi tính năng này được thêm mới có cột K (Kích thước);
         // các dòng cũ hơn (upload trước đó) không có dữ liệu này -> mặc định 0.
         sizeBytes: Number(sizeBytesRaw) || 0,
+        // Cột L-N (Source URL, Mô tả, Dependencies): dòng cũ chưa có -> rỗng.
+        sourceUrl: sourceUrl || "",
+        description: description || "",
+        dependencies: dependencies || "",
       };
     });
 
@@ -1050,6 +1058,9 @@ function renderFiles() {
     const changelogLink = f.changelog
       ? `<a class="changelog-link" href="${f.changelog}" target="_blank" rel="noopener" title="Xem Release Notes / Change Log">📝</a>`
       : "";
+    const sourceLink = f.sourceUrl
+      ? `<a class="changelog-link" href="${f.sourceUrl}" target="_blank" rel="noopener" title="Trang chủ / Source của hãng">🌐</a>`
+      : "";
     const latestBadge = f.isLatest
       ? `<span class="badge badge-latest" title="Phiên bản mới nhất đang lưu trữ cho model này">🏆 Mới nhất</span>`
       : "";
@@ -1057,19 +1068,20 @@ function renderFiles() {
       <td class="file-name" data-label="Tên file">
         <span class="file-icon-badge cat-${catClass}">${CATEGORY_ICON[f.category] || "📄"}</span>
         <span>${fileLabel}</span>
-        ${changelogLink}
+        ${changelogLink}${sourceLink}
       </td>
       <td data-label="Hãng">${vendorName(f.vendor)}</td>
       <td data-label="Loại">${f.category}</td>
       <td data-label="Sản phẩm/Model">${f.product}</td>
       <td data-label="Version">${f.version}</td>
+      <td data-label="Dung lượng">${f.sizeBytes ? formatBytes(f.sizeBytes) : "—"}</td>
       <td data-label="Ngày upload">${f.date}</td>
       <td data-label="Người upload">${f.user}</td>
       <td data-label="Trạng thái">
         <span class="badge badge-${f.status}">${f.status}</span>
         ${latestBadge}
       </td>
-      <td class="row-actions" data-label="Thao tác">${actionBtn}${checksumBtn}</td>
+      <td class="row-actions" data-label="Thao tác">${actionBtn}<button class="link-btn" data-action="detail" data-idx="${idx}" title="Xem chi tiết file">ℹ️ Chi tiết</button>${checksumBtn}</td>
     `;
     fileTableBody.appendChild(tr);
   });
@@ -1083,6 +1095,52 @@ function renderFiles() {
   fileTableBody.querySelectorAll('[data-action="checksum"]').forEach((btn) => {
     btn.addEventListener("click", () => copyChecksum(files[Number(btn.dataset.idx)]));
   });
+  fileTableBody.querySelectorAll('[data-action="detail"]').forEach((btn) => {
+    btn.addEventListener("click", () => showFileDetail(files[Number(btn.dataset.idx)]));
+  });
+}
+
+// Panel chi tiết file: gom toàn bộ metadata (mô tả/README, dependencies, checksum,
+// dung lượng, link changelog/source...) vào 1 modal để kỹ sư xem nhanh trước khi tải.
+const fileDetailOverlay = document.getElementById("fileDetailOverlay");
+const fileDetailTitleEl = document.getElementById("fileDetailTitle");
+const fileDetailBodyEl = document.getElementById("fileDetailBody");
+document.getElementById("closeFileDetailModal").addEventListener("click", () => fileDetailOverlay.classList.remove("open"));
+fileDetailOverlay.addEventListener("click", (e) => { if (e.target === fileDetailOverlay) fileDetailOverlay.classList.remove("open"); });
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function showFileDetail(f) {
+  fileDetailTitleEl.textContent = `${CATEGORY_ICON[f.category] || "📄"} ${f.product} — ${f.version}`;
+
+  const rowsHtml = [
+    ["Hãng", vendorName(f.vendor)],
+    ["Loại", f.category],
+    ["Sản phẩm/Model", f.product],
+    ["Version", f.version],
+    ["Dung lượng", f.sizeBytes ? formatBytes(f.sizeBytes) : "—"],
+    ["Ngày upload", f.date],
+    ["Người upload", f.user],
+    ["Trạng thái", f.status + (f.isLatest ? " · 🏆 Mới nhất" : "")],
+    ["Checksum SHA-256", hasRealChecksum(f.checksum) ? `<code class="detail-checksum">${escapeHtml(f.checksum)}</code>` : "—"],
+    ["Change log", f.changelog ? `<a href="${escapeHtml(f.changelog)}" target="_blank" rel="noopener">📝 ${escapeHtml(f.changelog)}</a>` : "—"],
+    ["Trang chủ / Source", f.sourceUrl ? `<a href="${escapeHtml(f.sourceUrl)}" target="_blank" rel="noopener">🌐 ${escapeHtml(f.sourceUrl)}</a>` : "—"],
+    ["File trên Drive", f.driveLink ? `<a href="${escapeHtml(f.driveLink)}" target="_blank" rel="noopener">🔗 Mở trên Drive</a>` : "— (dữ liệu mẫu minh hoạ)"],
+  ]
+    .map(([label, value]) => `<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">${value}</div></div>`)
+    .join("");
+
+  const descHtml = f.description
+    ? `<div class="detail-section"><div class="detail-section-title">📄 Mô tả / README</div><p>${escapeHtml(f.description)}</p></div>`
+    : "";
+  const depsHtml = f.dependencies
+    ? `<div class="detail-section detail-deps"><div class="detail-section-title">⚠️ Yêu cầu đi kèm (Dependencies)</div><p>${escapeHtml(f.dependencies)}</p></div>`
+    : "";
+
+  fileDetailBodyEl.innerHTML = descHtml + depsHtml + `<div class="detail-grid">${rowsHtml}</div>`;
+  fileDetailOverlay.classList.add("open");
 }
 
 // Copy checksum SHA-256 của file vào clipboard để kỹ sư dán vào lệnh verify
@@ -1261,6 +1319,9 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
   const product = document.getElementById("fProduct").value.trim();
   const version = document.getElementById("fVersion").value.trim();
   const changelog = document.getElementById("fChangelog").value.trim();
+  const sourceUrl = document.getElementById("fSourceUrl").value.trim();
+  const description = document.getElementById("fDescription").value.trim();
+  const dependencies = document.getElementById("fDependencies").value.trim();
   // Upload nhiều file cùng lúc (VD: firmware.bin + release-notes.pdf, hoặc nhiều
   // gói vá cùng đợt) — tất cả dùng chung Hãng/Loại/Model/Version/Change log đã nhập.
   const files = Array.from(fFileInput.files || []);
@@ -1291,6 +1352,9 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
     product,
     version,
     changelog,
+    sourceUrl,
+    description,
+    dependencies,
     date: uploadDate,
     user: uploadUser,
     status: "Active",
