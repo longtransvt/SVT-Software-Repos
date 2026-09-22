@@ -325,6 +325,20 @@ body {
   border-color: rgba(245, 130, 31, 0.35); margin-left: 4px;
 }
 
+/* Tag phản hồi nhanh (kỹ sư tự gắn trong modal Chi tiết file) */
+.tag-badge { margin-left: 4px; }
+.tag-loi { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+.tag-cu { background: var(--bg); color: var(--text-muted); border-color: var(--border); }
+.tag-capnhat { background: var(--warn-soft); color: var(--warn); border-color: #fde68a; }
+.tag-ok { background: var(--success-soft); color: var(--success); border-color: #a7f3d0; }
+
+.feedback-tags-picker { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+.feedback-tag-checkbox {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
+  padding: 5px 10px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer;
+}
+.feedback-tag-checkbox input { cursor: pointer; }
+
 .row-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .changelog-link { text-decoration: none; font-size: 14px; opacity: 0.8; }

@@ -110,9 +110,13 @@ const DRIVE_CONFIG = {
 1. Tạo một Google Sheet mới trong `00_INDEX_METADATA` (hoặc dùng file `Master-Index.gsheet` đã có trong cấu trúc README).
 2. Đặt tên tab (sheet) là **Master-Index** (đúng với `MASTER_INDEX_SHEET_NAME`), hàng đầu tiên là tiêu đề cột theo đúng thứ tự:
 
-   | A | B | C | D | E | F | G | H | I | J | K | L | M | N |
-   |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-   | Vendor | Category | Product/Model | Version | Upload Date | Uploaded By | Checksum (SHA-256) | Change Log URL | Status | Drive Link | Kích thước (bytes) | Source URL | Mô tả | Dependencies |
+   | A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P |
+   |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+   | Vendor | Category | Product/Model | Version | Upload Date | Uploaded By | Checksum (SHA-256) | Change Log URL | Status | Drive Link | Kích thước (bytes) | Source URL | Mô tả | Dependencies | Download Count | Feedback Tags |
+
+   - Cột **O (Download Count)**: số lượt kỹ sư đã bấm "Mở trên Drive" để tải file này, tăng dần theo thời gian thực (ghi ngược 1 ô mỗi lần tải, không phải ghi lại cả dòng).
+   - Cột **P (Feedback Tags)**: các tag phản hồi nhanh, lưu dạng chuỗi cách nhau bởi dấu phẩy, ví dụ `loi,capnhat`. 4 giá trị cố định hệ thống dùng: `loi` (🔴 Lỗi), `cu` (⚪ Cũ/Lỗi thời), `capnhat` (🟠 Cần cập nhật), `ok` (🟢 Đã xác nhận OK).
+   - Các dòng cũ (upload trước khi có 2 cột này) không có dữ liệu ở O/P — app tự mặc định Download Count = 0, Feedback Tags = rỗng, không lỗi.
 
 3. Mở Sheet trên trình duyệt, copy **Sheet ID** từ URL:
    `https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit` ← phần `<SHEET_ID>`.

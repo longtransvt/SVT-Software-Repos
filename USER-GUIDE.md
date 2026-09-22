@@ -18,12 +18,13 @@
 4. [Duyệt & tìm kiếm file](#4-duyệt--tìm-kiếm-file)
 5. [Bộ lọc nâng cao](#5-bộ-lọc-nâng-cao)
 6. [Tải xuống file](#6-tải-xuống-file)
-7. [Tải lên file (Upload Software)](#7-tải-lên-file-upload-software)
-8. [Quản lý phiên bản & xác thực file](#8-quản-lý-phiên-bản--xác-thực-file)
-9. [Thêm Hãng công nghệ mới](#9-thêm-hãng-công-nghệ-mới)
-10. [Thêm Sản phẩm/Model mới](#10-thêm-sản-phẩmmodel-mới)
-11. [Chế độ sáng/tối](#11-chế-độ-sángtối)
-12. [Câu hỏi thường gặp / Xử lý sự cố](#12-câu-hỏi-thường-gặp--xử-lý-sự-cố)
+7. [Lượt tải & Tag phản hồi nhanh](#7-lượt-tải--tag-phản-hồi-nhanh)
+8. [Tải lên file (Upload Software)](#8-tải-lên-file-upload-software)
+9. [Quản lý phiên bản & xác thực file](#9-quản-lý-phiên-bản--xác-thực-file)
+10. [Thêm Hãng công nghệ mới](#10-thêm-hãng-công-nghệ-mới)
+11. [Thêm Sản phẩm/Model mới](#11-thêm-sản-phẩmmodel-mới)
+12. [Chế độ sáng/tối](#12-chế-độ-sángtối)
+13. [Câu hỏi thường gặp / Xử lý sự cố](#13-câu-hỏi-thường-gặp--xử-lý-sự-cố)
 
 ---
 
@@ -149,6 +150,7 @@ và với ô tìm kiếm toàn cục):
 | **Sản phẩm/Model** | Danh sách sản phẩm tự động thu hẹp theo Hãng vừa chọn ở trên (chọn "Tất cả hãng" thì hiện đủ mọi model) |
 | **Người upload** | Lọc theo email/tên kỹ sư đã upload file |
 | **Ngày upload từ / Đến ngày** | Lọc theo khoảng thời gian upload |
+| **Tag phản hồi** | Lọc theo tag kỹ sư đã gắn (Lỗi / Cũ/Lỗi thời / Cần cập nhật / Đã xác nhận OK — xem mục 7) |
 
 - Chọn lại **Hãng** sẽ tự động reset **Sản phẩm/Model** về "Tất cả sản phẩm" (tránh chọn nhầm model của hãng cũ).
 - Bấm **"✕ Xoá bộ lọc nâng cao"** để reset cả 4 tiêu chí về mặc định trong 1 lần.
@@ -163,20 +165,46 @@ và với ô tìm kiếm toàn cục):
   - **⬇️ Tải xuống** — với dữ liệu mẫu minh hoạ (chưa gắn Drive thật).
 - Cột **📝** (biểu tượng ghi chú, ngay cạnh tên file) — nếu có, bấm để mở **Release Notes / Change Log**
   của phiên bản đó (mở tab mới tới URL đã điền khi upload).
-- Cột **🔑 Checksum** — xem mục 8 bên dưới.
+- Cột **🔑 Checksum** — xem mục 9 bên dưới.
 
 ---
 
-## 7. Tải lên file (Upload Software)
+## 7. Lượt tải & Tag phản hồi nhanh
+
+**Đếm lượt download**
+- Mỗi khi có ai bấm **"🔗 Mở trên Drive"** để tải 1 file thật, cột **⬇️ Lượt tải** trong bảng tự tăng thêm 1
+  và được ghi ngược ngay vào Google Sheet Master-Index — tất cả kỹ sư dùng chung con số này (không phải đếm
+  riêng theo từng máy/trình duyệt).
+- Nếu việc ghi lên Sheet gặp sự cố mạng, file vẫn mở bình thường — chỉ có cảnh báo nhẹ trong console, không
+  chặn thao tác của bạn.
+
+**Tag phản hồi nhanh**
+- Mở **"ℹ️ Chi tiết"** của 1 file để gắn nhanh 1 hoặc nhiều tag phản hồi:
+
+  | Tag | Ý nghĩa |
+  |---|---|
+  | 🔴 Lỗi | File có vấn đề khi cài đặt/sử dụng |
+  | ⚪ Cũ/Lỗi thời | Không còn khuyến nghị dùng, đã có bản mới hơn |
+  | 🟠 Cần cập nhật | Cần kiểm tra lại/cập nhật thông tin |
+  | 🟢 Đã xác nhận OK | Đã kiểm thử, dùng ổn định |
+
+- Tick chọn tag phù hợp rồi bấm **"💾 Lưu tag phản hồi"**. Tag hiển thị ngay dưới dạng badge màu cạnh tên
+  file trong bảng danh sách, giúp cả nhóm thấy trạng thái file mà không cần mở chi tiết.
+- Bỏ tick rồi lưu lại = gỡ tag khỏi file.
+- Lọc nhanh theo tag qua **Bộ lọc nâng cao** (mục 5).
+
+---
+
+## 8. Tải lên file (Upload Software)
 
 1. Bấm **"⬆️ Upload Software"** ở góc trên (yêu cầu đã đăng nhập Google nếu hệ thống đã kết nối Drive thật).
 2. Điền form:
 
    | Trường | Ghi chú |
    |---|---|
-   | **Hãng (Vendor)** * | Chọn từ danh sách đã có, hoặc thêm hãng mới trước (xem mục 9) |
+   | **Hãng (Vendor)** * | Chọn từ danh sách đã có, hoặc thêm hãng mới trước (xem mục 10) |
    | **Loại (Category)** * | Firmware / Application / OS / Patch OS |
-   | **Sản phẩm/Model** * | Gõ hoặc chọn từ gợi ý có sẵn (xem mục 10) |
+   | **Sản phẩm/Model** * | Gõ hoặc chọn từ gợi ý có sẵn (xem mục 11) |
    | **Phiên bản (Version)** * | VD: `v2.78`, `9.4 ISO`, `KB5041160` |
    | **Ghi chú phát hành / Change log (URL)** | Không bắt buộc — link tài liệu release notes của hãng |
    | **Tệp tin** * | Chọn hoặc **kéo-thả nhiều file cùng lúc** vào khung upload |
@@ -195,7 +223,7 @@ hoạ trên giao diện (không có file thật trên Drive) và sẽ mất khi 
 
 ---
 
-## 8. Quản lý phiên bản & xác thực file
+## 9. Quản lý phiên bản & xác thực file
 
 - **Không ghi đè**: nếu bạn upload đúng version đã tồn tại cho cùng Hãng/Loại/Model, hệ thống cảnh báo
   (hiện hộp thoại xác nhận) nhưng **vẫn giữ lại cả 2 bản** để tra cứu lịch sử — không tự động xoá bản cũ.
@@ -212,7 +240,7 @@ hoạ trên giao diện (không có file thật trên Drive) và sẽ mất khi 
 
 ---
 
-## 9. Thêm Hãng công nghệ mới
+## 10. Thêm Hãng công nghệ mới
 
 1. Bấm **"+ Thêm hãng khác"** ở cuối sidebar trái.
 2. Điền **Tên hãng** (VD: `Fortinet`) và **biểu tượng emoji** tuỳ chọn (VD: `🛡️`).
@@ -226,7 +254,7 @@ hoạ trên giao diện (không có file thật trên Drive) và sẽ mất khi 
 
 ---
 
-## 10. Thêm Sản phẩm/Model mới
+## 11. Thêm Sản phẩm/Model mới
 
 - Ở form Upload, trường **"Sản phẩm/Model"** là ô nhập liệu có **gợi ý (autocomplete)**:
   - Nếu Model đã từng upload trước đó cho đúng hãng đang chọn → gõ vài ký tự sẽ thấy gợi ý, chọn lại để
@@ -241,14 +269,14 @@ hoạ trên giao diện (không có file thật trên Drive) và sẽ mất khi 
 
 ---
 
-## 11. Chế độ sáng/tối
+## 12. Chế độ sáng/tối
 
 - Bấm biểu tượng **🌙 / ☀️** ở góc trên bên phải để chuyển đổi giao diện Sáng ↔ Tối.
 - Lựa chọn được ghi nhớ (lưu trong trình duyệt) — lần sau mở lại portal sẽ giữ đúng chế độ đã chọn.
 
 ---
 
-## 12. Câu hỏi thường gặp / Xử lý sự cố
+## 13. Câu hỏi thường gặp / Xử lý sự cố
 
 | Tình huống | Giải thích / Cách xử lý |
 |---|---|

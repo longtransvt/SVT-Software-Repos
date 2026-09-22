@@ -151,21 +151,31 @@ const DEFAULT_VENDORS = [
 
 // ---- Dữ liệu mẫu để minh hoạ bảng danh sách file (không có trên Drive thật) ----
 const SAMPLE_FILES = [
-  { vendor: "hpe", category: "Firmware", product: "ProLiant DL380 Gen10", version: "iLO5 v2.78", date: "2026-09-15", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 82 * 1024 * 1024, sourceUrl: "https://support.hpe.com/connect/s/product?kmpmoid=1010026910", description: "Firmware iLO5 bản ổn định cho dòng ProLiant Gen10. Khuyến nghị cập nhật để vá lỗ hổng bảo mật iLO.", dependencies: "Cần iLO ≥ v2.10 trước khi nâng cấp trực tiếp lên v2.78" },
-  { vendor: "hpe", category: "Firmware", product: "ProLiant DL360 Gen9", version: "iLO4 v2.55", date: "2025-02-10", user: "tran.thi.b", status: "Deprecated", driveLink: null, sizeBytes: 64 * 1024 * 1024 },
-  { vendor: "dell", category: "Firmware", product: "PowerEdge R740", version: "iDRAC 6.10.30", date: "2026-08-02", user: "le.van.c", status: "Active", driveLink: null, sizeBytes: 48 * 1024 * 1024 },
-  { vendor: "cisco", category: "OS", product: "Catalyst 9300", version: "IOS-XE 17.12.3", date: "2026-07-20", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 620 * 1024 * 1024 },
-  { vendor: "cisco", category: "Patch", product: "Nexus 9000", version: "NX-OS 9.3.12 patch", date: "2026-06-01", user: "pham.thi.d", status: "Active", driveLink: null, sizeBytes: 210 * 1024 * 1024 },
-  { vendor: "netapp", category: "Firmware", product: "AFF A400", version: "ONTAP 9.14.1P4", date: "2026-05-11", user: "le.van.c", status: "Active", driveLink: null, sizeBytes: 1.2 * 1024 * 1024 * 1024 },
-  { vendor: "hitachi", category: "Firmware", product: "VSP E1090", version: "SVOS 9.8.3", date: "2025-11-30", user: "tran.thi.b", status: "Archived", driveLink: null, sizeBytes: 340 * 1024 * 1024 },
-  { vendor: "oracle", category: "Application", product: "Oracle Database", version: "19.24 RU", date: "2026-08-28", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 2.8 * 1024 * 1024 * 1024 },
-  { vendor: "microsoft", category: "OS", product: "Windows Server 2022", version: "Build 20348.2966", date: "2026-09-01", user: "pham.thi.d", status: "Active", driveLink: null, sizeBytes: 5.4 * 1024 * 1024 * 1024 },
-  { vendor: "microsoft", category: "Patch", product: "Windows Server 2019", version: "KB5041160", date: "2026-04-14", user: "le.van.c", status: "Deprecated", driveLink: null, sizeBytes: 780 * 1024 * 1024 },
-  { vendor: "redhat", category: "OS", product: "RHEL 9", version: "9.4 ISO", date: "2026-06-15", user: "tran.thi.b", status: "Active", driveLink: null, sizeBytes: 9.1 * 1024 * 1024 * 1024, sourceUrl: "https://access.redhat.com/downloads/content/rhel", description: "ISO cài đặt RHEL 9.4 bản chính thức (Boot + BaseOS).", dependencies: "" },
-  { vendor: "redhat", category: "Patch", product: "RHEL 8", version: "RHSA-2026:5321", date: "2026-08-19", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 95 * 1024 * 1024 },
+  { vendor: "hpe", category: "Firmware", product: "ProLiant DL380 Gen10", version: "iLO5 v2.78", date: "2026-09-15", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 82 * 1024 * 1024, sourceUrl: "https://support.hpe.com/connect/s/product?kmpmoid=1010026910", description: "Firmware iLO5 bản ổn định cho dòng ProLiant Gen10. Khuyến nghị cập nhật để vá lỗ hổng bảo mật iLO.", dependencies: "Cần iLO ≥ v2.10 trước khi nâng cấp trực tiếp lên v2.78", downloadCount: 27, feedbackTags: ["ok"] },
+  { vendor: "hpe", category: "Firmware", product: "ProLiant DL360 Gen9", version: "iLO4 v2.55", date: "2025-02-10", user: "tran.thi.b", status: "Deprecated", driveLink: null, sizeBytes: 64 * 1024 * 1024, downloadCount: 9, feedbackTags: ["cu"] },
+  { vendor: "dell", category: "Firmware", product: "PowerEdge R740", version: "iDRAC 6.10.30", date: "2026-08-02", user: "le.van.c", status: "Active", driveLink: null, sizeBytes: 48 * 1024 * 1024, downloadCount: 4 },
+  { vendor: "cisco", category: "OS", product: "Catalyst 9300", version: "IOS-XE 17.12.3", date: "2026-07-20", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 620 * 1024 * 1024, downloadCount: 15, feedbackTags: ["capnhat"] },
+  { vendor: "cisco", category: "Patch", product: "Nexus 9000", version: "NX-OS 9.3.12 patch", date: "2026-06-01", user: "pham.thi.d", status: "Active", driveLink: null, sizeBytes: 210 * 1024 * 1024, downloadCount: 2, feedbackTags: ["loi"] },
+  { vendor: "netapp", category: "Firmware", product: "AFF A400", version: "ONTAP 9.14.1P4", date: "2026-05-11", user: "le.van.c", status: "Active", driveLink: null, sizeBytes: 1.2 * 1024 * 1024 * 1024, downloadCount: 6 },
+  { vendor: "hitachi", category: "Firmware", product: "VSP E1090", version: "SVOS 9.8.3", date: "2025-11-30", user: "tran.thi.b", status: "Archived", driveLink: null, sizeBytes: 340 * 1024 * 1024, downloadCount: 1 },
+  { vendor: "oracle", category: "Application", product: "Oracle Database", version: "19.24 RU", date: "2026-08-28", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 2.8 * 1024 * 1024 * 1024, downloadCount: 11 },
+  { vendor: "microsoft", category: "OS", product: "Windows Server 2022", version: "Build 20348.2966", date: "2026-09-01", user: "pham.thi.d", status: "Active", driveLink: null, sizeBytes: 5.4 * 1024 * 1024 * 1024, downloadCount: 33, feedbackTags: ["ok"] },
+  { vendor: "microsoft", category: "Patch", product: "Windows Server 2019", version: "KB5041160", date: "2026-04-14", user: "le.van.c", status: "Deprecated", driveLink: null, sizeBytes: 780 * 1024 * 1024, downloadCount: 7 },
+  { vendor: "redhat", category: "OS", product: "RHEL 9", version: "9.4 ISO", date: "2026-06-15", user: "tran.thi.b", status: "Active", driveLink: null, sizeBytes: 9.1 * 1024 * 1024 * 1024, sourceUrl: "https://access.redhat.com/downloads/content/rhel", description: "ISO cài đặt RHEL 9.4 bản chính thức (Boot + BaseOS).", dependencies: "", downloadCount: 19 },
+  { vendor: "redhat", category: "Patch", product: "RHEL 8", version: "RHSA-2026:5321", date: "2026-08-19", user: "nguyen.van.a", status: "Active", driveLink: null, sizeBytes: 95 * 1024 * 1024, downloadCount: 3 },
 ];
 
 const CATEGORY_ICON = { Firmware: "📦", Application: "🧩", OS: "💽", Patch: "🩹" };
+
+// Danh sách tag phản hồi nhanh cố định (kỹ sư tick chọn trong modal Chi tiết file,
+// hiển thị dạng badge màu ngay trong bảng danh sách để mọi người thấy trạng thái
+// file mà không cần mở chi tiết).
+const FEEDBACK_TAGS = [
+  { id: "loi", label: "🔴 Lỗi", className: "tag-loi" },
+  { id: "cu", label: "⚪ Cũ/Lỗi thời", className: "tag-cu" },
+  { id: "capnhat", label: "🟠 Cần cập nhật", className: "tag-capnhat" },
+  { id: "ok", label: "🟢 Đã xác nhận OK", className: "tag-ok" },
+];
 
 // ---- State ----
 const state = {
@@ -181,6 +191,7 @@ const state = {
   uploaderFilter: "all", // bộ lọc nâng cao: người upload
   advVendorFilter: "all",  // bộ lọc nâng cao: Hãng (độc lập với sidebar, áp dụng cả khi đang search toàn cục)
   advProductFilter: "all", // bộ lọc nâng cao: Sản phẩm/Model
+  advTagFilter: "all",     // bộ lọc nâng cao: Tag phản hồi nhanh
   accessToken: null,   // token OAuth hiện tại (chỉ giữ trong bộ nhớ, không lưu localStorage)
   tokenClient: null,   // Google Identity Services token client
   folderCache: {},     // cache "category::vendorName" -> folderId (tránh gọi API lặp lại)
@@ -203,6 +214,7 @@ const toggleAdvancedFiltersBtn = document.getElementById("toggleAdvancedFiltersB
 const advancedFiltersEl = document.getElementById("advancedFilters");
 const advVendorFilterEl = document.getElementById("advVendorFilter");
 const advProductFilterEl = document.getElementById("advProductFilter");
+const advTagFilterEl = document.getElementById("advTagFilter");
 const dateFromFilterEl = document.getElementById("dateFromFilter");
 const dateToFilterEl = document.getElementById("dateToFilter");
 const uploaderFilterEl = document.getElementById("uploaderFilter");
@@ -661,7 +673,7 @@ async function computeChecksum(file) {
 // Ghi 1 dòng mới vào Google Sheet "Master-Index" qua Sheets API v4.
 // Thứ tự cột: Vendor | Category | Product/Model | Version | Release/Upload Date
 // | Uploaded By | Checksum SHA-256 | Change Log URL | Status | Drive Link
-// | Kích thước (bytes) | Source URL | Mô tả | Dependencies
+// | Kích thước (bytes) | Source URL | Mô tả | Dependencies | Lượt tải | Tag phản hồi
 async function appendToMasterIndex(record) {
   if (!isMasterIndexConfigured()) return { skipped: true };
 
@@ -680,9 +692,11 @@ async function appendToMasterIndex(record) {
     record.sourceUrl || "",
     record.description || "",
     record.dependencies || "",
+    record.downloadCount || 0,
+    (record.feedbackTags || []).join(","),
   ];
 
-  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A:N`;
+  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A:P`;
   const url =
     `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}` +
     `/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
@@ -700,6 +714,30 @@ async function appendToMasterIndex(record) {
   return { skipped: false };
 }
 
+// Ghi ngược 1 ô đơn lẻ vào Master-Index theo đúng dòng thật trên Sheet (dùng cho
+// đếm lượt tải và gắn tag phản hồi — không cần ghi lại cả dòng). Lỗi ở đây KHÔNG
+// được để chặn hành động chính (tải file / đóng modal) của kỹ sư, nên luôn gọi
+// hàm này kèm .catch() ở nơi gọi thay vì await trực tiếp trong luồng UI chính.
+async function updateMasterIndexCell(sheetRow, column, value) {
+  if (!isMasterIndexConfigured() || !sheetRow) return;
+
+  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!${column}${sheetRow}`;
+  const url =
+    `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}` +
+    `/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`;
+
+  const resp = await fetch(url, {
+    method: "PUT",
+    headers: driveHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ values: [[value]] }),
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error(`Ghi Master-Index (${column}${sheetRow}) thất bại (HTTP ${resp.status}): ${errText}`);
+  }
+}
+
 // Đọc toàn bộ dòng đã ghi log trong Master-Index (do các lần upload trước đây,
 // từ bất kỳ kỹ sư/máy nào) để bảng danh sách file trên trang LUÔN phản ánh đúng
 // dữ liệu thật đang có trên Google Drive — không chỉ tồn tại tạm trong bộ nhớ
@@ -708,7 +746,7 @@ async function appendToMasterIndex(record) {
 async function loadFilesFromMasterIndex() {
   if (!isMasterIndexConfigured()) return;
 
-  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A2:N20000`;
+  const range = `${DRIVE_CONFIG.MASTER_INDEX_SHEET_NAME}!A2:P20000`;
   const resp = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${getEffectiveSheetId()}/values/${encodeURIComponent(range)}`,
     { headers: driveHeaders() }
@@ -718,9 +756,15 @@ async function loadFilesFromMasterIndex() {
   const rows = data.values || [];
 
   const records = rows
-    .filter((row) => row && row.length && row[0])
-    .map((row) => {
-      const [vendorLabel, category, product, version, date, user, checksum, changelog, status, driveLink, sizeBytesRaw, sourceUrl, description, dependencies] = row;
+    // Gắn số dòng thật trên Sheet (A2 = dòng 2) TRƯỚC khi filter/reverse, để về sau
+    // ghi ngược lượt tải / tag phản hồi đúng vào dòng gốc, không bị lệch theo thứ tự hiển thị.
+    .map((row, i) => ({ row, sheetRow: i + 2 }))
+    .filter(({ row }) => row && row.length && row[0])
+    .map(({ row, sheetRow }) => {
+      const [
+        vendorLabel, category, product, version, date, user, checksum, changelog, status, driveLink,
+        sizeBytesRaw, sourceUrl, description, dependencies, downloadCountRaw, feedbackTagsRaw,
+      ] = row;
       // Khớp lại Vendor ID nội bộ (dùng để lọc theo sidebar) từ tên Hãng đã ghi trong Sheet.
       const matched = state.vendors.find(
         (v) => v.name.toLowerCase() === (vendorLabel || "").toLowerCase()
@@ -745,6 +789,11 @@ async function loadFilesFromMasterIndex() {
         sourceUrl: sourceUrl || "",
         description: description || "",
         dependencies: dependencies || "",
+        // Cột O-P (Lượt tải, Tag phản hồi): dòng cũ chưa có -> 0 / mảng rỗng.
+        downloadCount: Number(downloadCountRaw) || 0,
+        feedbackTags: (feedbackTagsRaw || "").split(",").map((t) => t.trim()).filter(Boolean),
+        // Số dòng thật trên Sheet, dùng để ghi ngược đúng ô khi tải file / gắn tag.
+        sheetRow,
       };
     });
 
@@ -957,7 +1006,7 @@ function getFilteredFiles() {
     );
   }
 
-  // Bộ lọc nâng cao: Hãng, Sản phẩm/Model, ngày upload (từ/đến), người upload
+  // Bộ lọc nâng cao: Hãng, Sản phẩm/Model, ngày upload (từ/đến), người upload, tag phản hồi
   // (áp dụng độc lập với bộ lọc Hãng/Loại ở sidebar/tab — dùng để thu hẹp thêm kết quả,
   // kể cả khi đang ở chế độ search toàn cục.)
   if (state.advVendorFilter !== "all") list = list.filter((f) => f.vendor === state.advVendorFilter);
@@ -965,6 +1014,7 @@ function getFilteredFiles() {
   if (state.dateFrom) list = list.filter((f) => f.date >= state.dateFrom);
   if (state.dateTo) list = list.filter((f) => f.date <= state.dateTo);
   if (state.uploaderFilter !== "all") list = list.filter((f) => f.user === state.uploaderFilter);
+  if (state.advTagFilter !== "all") list = list.filter((f) => (f.feedbackTags || []).includes(state.advTagFilter));
 
   switch (state.sortBy) {
     case "date-asc": list.sort((a, b) => a.date.localeCompare(b.date)); break;
@@ -1064,17 +1114,24 @@ function renderFiles() {
     const latestBadge = f.isLatest
       ? `<span class="badge badge-latest" title="Phiên bản mới nhất đang lưu trữ cho model này">🏆 Mới nhất</span>`
       : "";
+    const tagBadges = (f.feedbackTags || [])
+      .map((tid) => FEEDBACK_TAGS.find((t) => t.id === tid))
+      .filter(Boolean)
+      .map((t) => `<span class="badge tag-badge ${t.className}" title="Tag phản hồi">${t.label}</span>`)
+      .join("");
     tr.innerHTML = `
       <td class="file-name" data-label="Tên file">
         <span class="file-icon-badge cat-${catClass}">${CATEGORY_ICON[f.category] || "📄"}</span>
         <span>${fileLabel}</span>
         ${changelogLink}${sourceLink}
+        ${tagBadges}
       </td>
       <td data-label="Hãng">${vendorName(f.vendor)}</td>
       <td data-label="Loại">${f.category}</td>
       <td data-label="Sản phẩm/Model">${f.product}</td>
       <td data-label="Version">${f.version}</td>
       <td data-label="Dung lượng">${f.sizeBytes ? formatBytes(f.sizeBytes) : "—"}</td>
+      <td data-label="Lượt tải" title="Số lượt đã tải xuống trên Drive">⬇️ ${f.downloadCount || 0}</td>
       <td data-label="Ngày upload">${f.date}</td>
       <td data-label="Người upload">${f.user}</td>
       <td data-label="Trạng thái">
@@ -1090,7 +1147,11 @@ function renderFiles() {
     btn.addEventListener("click", () => downloadFile(files[Number(btn.dataset.idx)]));
   });
   fileTableBody.querySelectorAll('[data-action="open"]').forEach((btn) => {
-    btn.addEventListener("click", () => window.open(files[Number(btn.dataset.idx)].driveLink, "_blank"));
+    btn.addEventListener("click", () => {
+      const f = files[Number(btn.dataset.idx)];
+      recordDownload(f);
+      window.open(f.driveLink, "_blank");
+    });
   });
   fileTableBody.querySelectorAll('[data-action="checksum"]').forEach((btn) => {
     btn.addEventListener("click", () => copyChecksum(files[Number(btn.dataset.idx)]));
@@ -1112,7 +1173,10 @@ function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+let currentDetailFile = null; // file object đang mở trong modal Chi tiết (dùng khi bấm "Lưu tag")
+
 function showFileDetail(f) {
+  currentDetailFile = f;
   fileDetailTitleEl.textContent = `${CATEGORY_ICON[f.category] || "📄"} ${f.product} — ${f.version}`;
 
   const rowsHtml = [
@@ -1121,6 +1185,7 @@ function showFileDetail(f) {
     ["Sản phẩm/Model", f.product],
     ["Version", f.version],
     ["Dung lượng", f.sizeBytes ? formatBytes(f.sizeBytes) : "—"],
+    ["Lượt tải", `⬇️ ${f.downloadCount || 0}`],
     ["Ngày upload", f.date],
     ["Người upload", f.user],
     ["Trạng thái", f.status + (f.isLatest ? " · 🏆 Mới nhất" : "")],
@@ -1139,8 +1204,45 @@ function showFileDetail(f) {
     ? `<div class="detail-section detail-deps"><div class="detail-section-title">⚠️ Yêu cầu đi kèm (Dependencies)</div><p>${escapeHtml(f.dependencies)}</p></div>`
     : "";
 
-  fileDetailBodyEl.innerHTML = descHtml + depsHtml + `<div class="detail-grid">${rowsHtml}</div>`;
+  const tagsHtml = `
+    <div class="detail-section">
+      <div class="detail-section-title">🏷️ Tag phản hồi nhanh</div>
+      <div class="feedback-tags-picker">
+        ${FEEDBACK_TAGS.map(
+          (t) => `
+          <label class="feedback-tag-checkbox">
+            <input type="checkbox" value="${t.id}" ${(f.feedbackTags || []).includes(t.id) ? "checked" : ""}>
+            ${t.label}
+          </label>`
+        ).join("")}
+      </div>
+      <button type="button" class="btn btn-outline btn-small" id="saveFeedbackTagsBtn">💾 Lưu tag phản hồi</button>
+    </div>`;
+
+  fileDetailBodyEl.innerHTML = tagsHtml + descHtml + depsHtml + `<div class="detail-grid">${rowsHtml}</div>`;
   fileDetailOverlay.classList.add("open");
+
+  document.getElementById("saveFeedbackTagsBtn").addEventListener("click", saveFeedbackTags);
+}
+
+// Lưu lại danh sách tag phản hồi kỹ sư vừa tick chọn trong modal Chi tiết: cập nhật
+// ngay trong bộ nhớ (badge trong bảng hiển thị tức thì) rồi ghi ngược lên Master-Index.
+function saveFeedbackTags() {
+  if (!currentDetailFile) return;
+  const checked = Array.from(
+    fileDetailBodyEl.querySelectorAll(".feedback-tags-picker input:checked")
+  ).map((el) => el.value);
+
+  currentDetailFile.feedbackTags = checked;
+  renderFiles();
+  toast(`Đã lưu tag phản hồi cho "${currentDetailFile.product} — ${currentDetailFile.version}".`, "success");
+
+  if (currentDetailFile.sheetRow) {
+    updateMasterIndexCell(currentDetailFile.sheetRow, "P", checked.join(",")).catch((err) => {
+      console.warn("Không ghi được tag phản hồi vào Master-Index:", err);
+      toast("Đã lưu tag ở trình duyệt, nhưng ghi lên Google Sheet thất bại. Vui lòng thử lại.", "warning");
+    });
+  }
 }
 
 // Copy checksum SHA-256 của file vào clipboard để kỹ sư dán vào lệnh verify
@@ -1154,6 +1256,19 @@ function copyChecksum(file) {
     .writeText(file.checksum)
     .then(() => toast(`Đã copy checksum SHA-256 của "${file.product} — ${file.version}".`, "success"))
     .catch(() => toast(`Checksum SHA-256: ${file.checksum}`, "info", 9000));
+}
+
+// Tăng lượt tải khi kỹ sư bấm "🔗 Mở trên Drive" (file thật đã upload thành công).
+// Cập nhật UI ngay (optimistic) rồi mới ghi ngược Sheet ở nền — lỗi ghi Sheet không
+// được chặn việc mở file, chỉ log cảnh báo âm thầm.
+function recordDownload(file) {
+  file.downloadCount = (file.downloadCount || 0) + 1;
+  renderFiles();
+  if (file.sheetRow) {
+    updateMasterIndexCell(file.sheetRow, "O", file.downloadCount).catch((err) => {
+      console.warn("Không ghi được lượt tải vào Master-Index:", err);
+    });
+  }
 }
 
 function downloadFile(file) {
@@ -1190,6 +1305,7 @@ advProductFilterEl.addEventListener("change", (e) => { state.advProductFilter = 
 dateFromFilterEl.addEventListener("change", (e) => { state.dateFrom = e.target.value; renderFiles(); });
 dateToFilterEl.addEventListener("change", (e) => { state.dateTo = e.target.value; renderFiles(); });
 uploaderFilterEl.addEventListener("change", (e) => { state.uploaderFilter = e.target.value; renderFiles(); });
+advTagFilterEl.addEventListener("change", (e) => { state.advTagFilter = e.target.value; renderFiles(); });
 
 toggleAdvancedFiltersBtn.addEventListener("click", () => {
   const isHidden = advancedFiltersEl.style.display === "none";
@@ -1203,11 +1319,13 @@ resetAdvancedFiltersBtn.addEventListener("click", () => {
   state.dateFrom = "";
   state.dateTo = "";
   state.uploaderFilter = "all";
+  state.advTagFilter = "all";
   advVendorFilterEl.value = "all";
   advProductFilterEl.value = "all";
   dateFromFilterEl.value = "";
   dateToFilterEl.value = "";
   uploaderFilterEl.value = "all";
+  advTagFilterEl.value = "all";
   renderFiles();
 });
 
@@ -1361,6 +1479,8 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
     driveLink: null,
     checksum: "",
     sizeBytes: fileObj.size,
+    downloadCount: 0,
+    feedbackTags: [],
   });
 
   // --- Bắt buộc đăng nhập Google (tài khoản có quyền truy cập Shared Drive)

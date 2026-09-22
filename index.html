@@ -186,6 +186,16 @@
         </select>
       </div>
       <div class="form-row">
+        <label>Tag phản hồi</label>
+        <select id="advTagFilter">
+          <option value="all">Tất cả tag</option>
+          <option value="loi">🔴 Lỗi</option>
+          <option value="cu">⚪ Cũ/Lỗi thời</option>
+          <option value="capnhat">🟠 Cần cập nhật</option>
+          <option value="ok">🟢 Đã xác nhận OK</option>
+        </select>
+      </div>
+      <div class="form-row">
         <label>Ngày upload từ</label>
         <input type="date" id="dateFromFilter">
       </div>
@@ -206,6 +216,7 @@
             <th>Sản phẩm/Model</th>
             <th>Version</th>
             <th>Dung lượng</th>
+            <th>Lượt tải</th>
             <th>Ngày upload</th>
             <th>Người upload</th>
             <th>Trạng thái</th>
